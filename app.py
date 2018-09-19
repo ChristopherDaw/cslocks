@@ -1,6 +1,6 @@
 import sys
 import logging
-from hmac_hash import compute_signature, compare_signatures
+from validate import valid_request
 from flask import Flask, request
 from datetime import datetime
 
@@ -22,13 +22,10 @@ def homepage():
 def slash_command():
     if request.method == 'POST':
         #Ensure the request came from Slack
-        return request.get_data()
-        computed_signature = compute_signature(request)
-        slack_signature = request.headers['X-Slack-Signature']
-        if compare_signatures(computed_signature, slack_signature):
+        if valid_request(request):
             return 'success'
         else:
-            return "expecting: {}\ngot: {}".format(slack_signature, computed_signature);
+            return 'Access Denied'
 
 
         form_dict = request.form.to_dict()

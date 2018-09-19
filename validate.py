@@ -2,8 +2,14 @@ import os
 import hmac
 import hashlib
 
+def valid_request(request):
+    computed_signature = compute_signature(request)
+    slack_signature = request.headers['X-Slack-Signature']
+
+    return compare_signatures(computed_signature, slack_signature)
+
 def compute_signature(request):
-    body = request.get_data()
+    body = request.get_data(as_text=True)
     versionno = 'v0'
     timestamp = request.headers['X-Slack-Request-Timestamp']
 
