@@ -13,5 +13,9 @@ def homepage():
     <img src="http://loremflickr.com/600/400">
     """.format(time=the_time)
 
+@app.route('/slack/receive')
+def slash_command():
+    return "This is from flask for slack"
+
 if __name__ == '__main__':
     app.run(debug=True, use_reloader=True)
