@@ -1,6 +1,10 @@
-from flask import Flask
+import sys
+import logging
+from flask import Flask, request
 from datetime import datetime
+
 app = Flask(__name__)
+app.logger.addHandler(logging.StreamHandler(sys.stdout))
 
 @app.route('/')
 def homepage():
@@ -13,8 +17,12 @@ def homepage():
     <img src="http://loremflickr.com/600/400">
     """.format(time=the_time)
 
-@app.route('/slack/receive')
+@app.route('/slack/receive', methods=['POST', 'GET'])
 def slash_command():
+    if request.method == 'POST':
+        form_dict = request.form.to_dict()
+        return form_dict['text']
+
     return "This is from flask for slack"
 
 if __name__ == '__main__':
