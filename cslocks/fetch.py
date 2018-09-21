@@ -14,7 +14,7 @@ def send_delayed_message(req_form):
         "text": "Original POST request",
         "attachments": [
             {
-                "text": "Hello from python"
+                "text": content
             }
         ]
     }

@@ -4,6 +4,7 @@ import sys
 import logging
 import redis
 from flask import Flask
+from worker import conn
 
 # Set module name
 __module__ = 'cslocks'
@@ -14,9 +15,7 @@ app.config.update({
     'REDIS_URL': os.environ.get('REDIS_URL','redis://')
 })
 
-
-app.redis = redis.from_url(app.config['REDIS_URL'])
-app.task_queue = rq.Queue('combo-queue', connection=app.redis)
+app.task_queue = rq.Queue(connection=conn)
 app.logger.addHandler(logging.StreamHandler(sys.stdout))
 
 # Allow app to find @app.route views
