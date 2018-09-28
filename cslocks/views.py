@@ -1,4 +1,3 @@
-import sys
 from flask import request
 from datetime import datetime
 from cslocks import app
