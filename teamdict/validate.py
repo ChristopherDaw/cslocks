@@ -11,6 +11,7 @@ def is_valid_request(request):
     """
     computed_signature = compute_signature(request)
     slack_signature = request.headers['X-Slack-Signature']
+    print(f"Received: {computed_signature}\nExpted:{slack_signature}")
 
     return hmac.compare_digest(computed_signature, slack_signature)
 
@@ -25,6 +26,7 @@ def compute_signature(request):
     body = request.body
 
     basestr = bytes(f"{versionno}:{timestamp}:{body}", 'utf-8')
+    print(basestr)
     secret = bytes(os.environ.get('SIGNING_SECRET'), 'utf-8')
 
     # Prepend 'v0=' onto the string as the 'X-Slack-Signature also includes it.

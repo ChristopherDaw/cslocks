@@ -18,20 +18,20 @@ def triage_command(request):
 
     if not is_valid_request(request):
         message = "Access denied!"
-        slack.send_delayed_message(message, response_url)
+        send_delayed_message(message, response_url)
         return
 
     text = form['text'].lower().split()
 
     if len(text) < 2:
-        slack.send_help(slash_command, response_url)
+        send_help(slash_command, response_url)
         return
     else:
         command = text[0]
 
     #TODO: Parameter checking before passing the buck to the database handler.
     if command == 'help' or command == '':
-        slack.send_help(slash_command, response_url)
+        send_help(slash_command, response_url)
     elif command == 'create':
         db.create_table(form)
     elif command == 'add' or command == 'populate':
@@ -43,6 +43,6 @@ def triage_command(request):
     elif db.is_table(command):
         db.lookup(form)
     else:
-        slack.send_help(slash_command, response_url, message='Command not found.')
+        send_help(slash_command, response_url, message='Command not found.')
 
     return
