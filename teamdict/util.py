@@ -1,6 +1,6 @@
-import cslocks.postgres as db
-from cslocks.slack import send_delayed_message, send_help
-from cslocks.validate import is_valid_request
+import teamdict.postgres as db
+from teamdict.slack import send_delayed_message, send_help
+from teamdict.validate import is_valid_request
 
 def triage_command(request):
     """

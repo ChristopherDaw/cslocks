@@ -1,9 +1,9 @@
 import rq
 from redis import Redis
-from cslocks import app
 from flask import request
-from cslocks.util import triage_command
-from cslocks.slack import send_help
+from teamdict import app
+from teamdict.util import triage_command
+from teamdict.slack import send_help
 
 def queue_task(request):
     headers = dict(request.headers.to_list())

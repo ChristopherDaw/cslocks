@@ -1,2 +1,2 @@
-web: gunicorn cslocks:app --log-file=-
+web: gunicorn teamdict:app --log-file=-
 worker: python3 worker.py

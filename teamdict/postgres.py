@@ -1,7 +1,7 @@
 import os
 import psycopg2
-from cslocks import app
-from cslocks.slack import send_delayed_message
+from teamdict import app
+from teamdict.slack import send_delayed_message
 
 conn = app.dbconn
 

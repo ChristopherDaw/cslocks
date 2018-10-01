@@ -1,7 +1,7 @@
 from flask import request
 from datetime import datetime
-from cslocks import app
-from cslocks.redis import queue_task
+from teamdict import app
+from teamdict.redis import queue_task
 
 @app.route('/')
 def homepage():
