@@ -22,6 +22,7 @@ def create_table(form):
     """
     with conn.cursor() as cur:
         short_name, table_name = get_table_names(form)
+        print(f"{table_name} is a table: {is_table(table_name)}.")
         if is_table(table_name):
             send_delayed_message(
                     f'Table `{short_name}` exists.',
@@ -135,7 +136,7 @@ def is_table(table_name):
         True if table exists
         False if table does not exist
     """
-    result = False
+    table_name = table_name.lower()
     with conn.cursor() as cur:
         query = ('SELECT EXISTS (' +
                 'SELECT 1 FROM pg_tables ' +
@@ -145,5 +146,8 @@ def is_table(table_name):
         cur.execute(query, (table_name,))
         result = cur.fetchone()[0]
 
-    return result
+    if result:
+        return result
+    else:
+        return False
 

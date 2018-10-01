@@ -7,7 +7,8 @@ def triage_command(request):
     Send the request to the correct function
 
     Args:
-        request (Request): Flask object containing necessary information.
+        request (JobData): Object containing necessary informationr
+            headers, form, and body of the original POST request.
 
     Returns:
         None

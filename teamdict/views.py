@@ -17,6 +17,7 @@ def homepage():
 @app.route('/slack/receive', methods=['POST', 'GET'])
 def slash_command():
     if request.method == 'POST':
-        return queue_task(request)
+        req_body = request.get_data(as_text=True)
+        return queue_task(request, req_body)
 
     return "This is from flask for slack"
