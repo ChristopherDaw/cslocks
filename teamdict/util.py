@@ -44,7 +44,7 @@ def triage_command(request):
         db.delete_data(form)
     elif command == 'find':
         db.lookup(form)
-    elif len(text) == 1:
+    elif len(text) <= 2:
         db.lookup(form)
     else:
         send_help(slash_command, response_url, message='Command not found.')
