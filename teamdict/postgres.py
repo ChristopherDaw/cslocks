@@ -1,3 +1,16 @@
+"""
+postgres.py
+Chris Daw
+October 4, 2018
+
+This module defines functions to interface with a PostgreSQL database to
+create and drop tables, add and delete rows of key-value pairs, and lookup
+a key from one or many tables.
+
+All methods in this module expect the command arguments to be formatted
+correctly.
+"""
+
 import os
 import psycopg2
 from teamdict import app
@@ -7,15 +20,17 @@ conn = app.dbconn
 
 def create_table(form):
     """
-    Build and execute a query to create a table on the database given a table
-    with that name in the current channel does not yet exist. This function
-    assumes the command is formatted properly with the correct amount of
-    arguments, e.g.:
+    Build and execute a query to create a table to the database given a table
+    with that name in the current channel does not yet exist.
 
-    </command> create table_name
+    /dbmod create table_name
+
+    Table names are formatted as:
+        <team_domain>_<channel_id>_<table_name>
+    to ensure every table across all workspaces are unique.
 
     Args:
-        form (dict): Dictionary containing information from the original POST.
+        form (dict): Form data from the original POST request.
 
     Returns:
         None
@@ -43,6 +58,18 @@ def create_table(form):
 #TODO: Add a confirmation button/text to ensure the user wants to delete a table
 #Slack api has "destructive buttons" for confirmation of destructive actions.
 def drop_table(form):
+    """
+    Build and execute a query to drop a table from the database given the table
+    specified exists in the current channel.
+
+    /dbmod drop table_name
+
+    Args:
+        form (dict): Form data from the original POST request.
+
+    Returns:
+        None
+    """
     with conn.cursor() as cur:
         short_name, table_name = get_table_names(form, 1)
         if not is_table(table_name):
@@ -59,6 +86,22 @@ def drop_table(form):
         conn.commit()
 
 def add_data(form):
+    """
+    Add a row containing a key-value pair and the date in the table specified.
+    Rows are formatted like so:
+
+        | key | value | date modified |
+
+    Where the key must be unique to the table.
+
+    /dbmod add table key value
+
+    Args:
+        form (dict): Form data from the original POST request.
+
+    Returns:
+        None
+    """
     with conn.cursor() as cur:
         short_name, table_name = get_table_names(form, 1)
         if not is_table(table_name):
@@ -87,6 +130,17 @@ def add_data(form):
         conn.commit()
 
 def delete_data(form):
+    """
+    Delete a row from the specified table where the key matches the given key.
+
+    /dbmod delete table key
+
+    Args:
+        form (dict): Form data from the original POST request.
+
+    Returns:
+        None
+    """
     with conn.cursor() as cur:
         short_name, table_name = get_table_names(form, 1)
         if not is_table(table_name):
@@ -111,11 +165,21 @@ def delete_data(form):
                     f'Key `{key}` was not found in `{short_name}`',
                     form['response_url'])
 
+#TODO: Add functionality to lookup multiple keys.
 def lookup(form):
-    text = form['text'].lower().split()
+    """
+    Lookup a value from the channel in which the command originated. If no
+    table is specified, all the tables are searched.
 
-    if text[0] == 'find':
-        text.pop(0)
+    /lookup key [table]
+
+    Args:
+        form (dict): Form data from the original POST request.
+
+    Returns:
+        None
+    """
+    text = form['text'].lower().split()
 
     key = text[0]
     values_found = [] #List of tuples, e.g. [(table, val), (table2, val2)]
@@ -163,6 +227,20 @@ def lookup(form):
 # and that the lookup() function sends a message to slack once it gets all the
 # queries done.
 def lookup_helper(form, key, table_names):
+    """
+    Builds and executes a query for the lookup() function to allow for multiple
+    tables to be searched.
+
+    Args:
+        form (dict): Form data from the original POST request.
+        key (str): The key for which we are searching.
+        table_names (tuple): A tuple containing the long and short forms of
+            the table name.
+
+    Returns:
+        A string containing the found value or an empty string if the key
+        is not found in the table.
+    """
     result = []
     with conn.cursor() as cur:
 
@@ -171,7 +249,7 @@ def lookup_helper(form, key, table_names):
             send_delayed_message(
                     f'No table named `{short_name}` exists.',
                     form['response_url'])
-            return
+            return ''
 
         query = ('SELECT value FROM %s ' +
                 'WHERE key = %s;')
@@ -188,6 +266,19 @@ def lookup_helper(form, key, table_names):
 ######################
 
 def get_table_names(form, tn_index):
+    """
+    Finds the table name and builds the long form table name stored in the db.
+    This function does not ensure the table exists. This should be done in the
+    function using get_table_names().
+
+    Args:
+        form (dict): Form data from the original POST request.
+        tn_index (int): The index at which the table_name appears in the
+            command args.
+
+    Returns:
+        A tuple containing the short and long forms of the table name found.
+    """
     text = form['text'].lower().split()
     team_domain = form['team_domain']
     channel_id = form['channel_id']
@@ -197,6 +288,16 @@ def get_table_names(form, tn_index):
     return (short_name, table_name)
 
 def add_short_name(table_name):
+    """
+    Adds the short form name of the table specified. The input is expected to
+    match the format of table names specified in create_table().
+
+    Args:
+        table_name (str): The long form name of the table.
+
+    Returns:
+        A tuple containing the short and long forms of the table name found.
+    """
     name = table_name.split('_')
     name.pop(0)
     name.pop(0)
@@ -205,7 +306,17 @@ def add_short_name(table_name):
     return (short_name, table_name)
 
 def get_channel_tables(form):
-    tables = []
+    """
+    Finds and returns all tables in the channel where the command originated.
+
+    Args:
+        form (dict): Form data from the original POST request.
+
+    Returns:
+        A list of tuples each containing the short and long form of the
+        table name found.
+    """
+    short_long_names = []
     with conn.cursor() as cur:
         team_domain = form['team_domain']
         channel_id = form ['channel_id']
@@ -216,7 +327,6 @@ def get_channel_tables(form):
                 'WHERE table_name ~ %s;')
         cur.execute(query, (table_prefix,))
         tables = [table[0] for table in cur.fetchall()]
-        #TODO: Figure out how to break apart what the cursor fetched
         short_long_names = [add_short_name(table) for table in tables]
 
     return short_long_names
@@ -248,4 +358,5 @@ def is_table(table_name):
         return False
 
 def as_is(table_name):
+    """Returns an AsIs object to avoid quoted table_names for db queries."""
     return psycopg2.extensions.AsIs(table_name)

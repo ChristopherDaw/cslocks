@@ -1,3 +1,13 @@
+"""
+slack.py
+Chris Daw
+October 4, 2018
+
+This module interfaces directly with the Slack API to perform actions
+necessary to communicate with the end user in Slack such as sending messages
+in response to the use of a slash command.
+"""
+
 import json
 import requests
 
@@ -30,7 +40,7 @@ def send_delayed_message(message, response_url, attachments=''):
     Args:
         message (str): The contents of the base message sent to user.
         response_url (str): The url to send our response POST request to.
-        attachments (str): The contents of the sub-message sent to user.
+        attachments (str): (Optional) The contents of the message attachment.
 
     Returns:
         None

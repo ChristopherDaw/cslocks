@@ -1,5 +1,6 @@
 testdata.txt
-post.sh
+lookup.sh
+modify.sh
 
 # Byte-compiled / optimized / DLL files
 __pycache__/

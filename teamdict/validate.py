@@ -1,25 +1,44 @@
+"""
+validate.py
+Chris Daw
+October 4, 2018
+
+This module reviews a POST request to ensure it originated from slack. The
+computation done here complies with Slack's "Verifying requests from Slack"
+API docs page found here:
+    https://api.slack.com/docs/verifying-requests-from-slack
+"""
 import os
 import hmac
 import hashlib
 
 def is_valid_request(request):
-    """Return true is request originates from Slack
-
+    """
     Follows Slack's cryptographic method of ensuring a POST request
     originates from Slack by comparing a signature in the request to
-    a computed signature.
+    a signature computed with HMAC.
+
+    Args:
+        request (Request): A POST request from flask.
+
+    Returns:
+        True if the request originates from Slack, False otherwise.
     """
     computed_signature = compute_signature(request)
     slack_signature = request.headers['X-Slack-Signature']
-#    print(f"Received: {computed_signature}\nExpted:{slack_signature}")
 
     return hmac.compare_digest(computed_signature, slack_signature)
 
 def compute_signature(request):
-    """Return a string containing the computed signature for verification
-
-    Computes the SHA256 HMAC hash  using the signing secret from Slack
+    """
+    Computes the SHA256 HMAC hash using the signing secret from Slack
     as the key and specific data from the POST request as the body.
+
+    Args:
+        request (Request): A POST request from flask.
+
+    Returns:
+        Return a string containing the computed signature for verification
     """
     versionno = 'v0'
     timestamp = request.headers['X-Slack-Request-Timestamp']

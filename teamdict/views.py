@@ -1,3 +1,10 @@
+"""
+views.py
+Chris Daw
+October 4, 2018
+
+This module defines the routes for flask endpoints.
+"""
 from flask import request
 from datetime import datetime
 from teamdict import app
@@ -14,10 +21,18 @@ def homepage():
     <img src="http://loremflickr.com/600/400/bird">
     """.format(time=the_time)
 
-@app.route('/slack/receive', methods=['POST', 'GET'])
-def slash_command():
+@app.route('/slack/lookup', methods=['POST', 'GET'])
+def lookup():
     if request.method == 'POST':
         req_body = request.get_data(as_text=True)
-        return queue_task(request, req_body)
+        return queue_task(request, req_body, 'lookup')
+
+    return "This is from flask for slack"
+
+@app.route('/slack/modify', methods=['POST', 'GET'])
+def modify():
+    if request.method == 'POST':
+        req_body = request.get_data(as_text=True)
+        return queue_task(request, req_body, 'modify')
 
     return "This is from flask for slack"
