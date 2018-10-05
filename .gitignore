@@ -1,4 +1,5 @@
-testdata.txt
+testlookup.txt
+testdbmod.txt
 lookup.sh
 modify.sh
 

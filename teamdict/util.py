@@ -57,7 +57,9 @@ def triage_command(job_data):
             #TODO: make global vars for help and usage strings
             send_help(slash_command, response_url, message='Accepted commands')
     elif slash_command[1:] == job_type == 'lookup':
-        if len(text) <= 2:
+        if text[0] == 'show':
+            db.show_tables(form)
+        elif len(text) <= 2:
             db.lookup(form)
         else:
             send_help(slash_command, response_url, message='Accepted commands')

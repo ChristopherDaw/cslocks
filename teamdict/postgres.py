@@ -165,6 +165,33 @@ def delete_data(form):
                     f'Key `{key}` was not found in `{short_name}`',
                     form['response_url'])
 
+def show_tables(form):
+    """
+    Send a message with a list of all the tables in the current channel.
+
+    Args:
+        form (dict): Form data from the original POST request.
+
+    Returns:
+        None
+    """
+    channel_name = form['channel_name']
+    table_names = get_channel_tables(form)
+
+    if len(table_names) == 0:
+        send_delayed_message(
+                f'No tables found in {channel_name}.',
+                form['response_url'])
+    else:
+        plural_s = 's' if len(table_names) > 1 else ''
+        short_name_arr = [table_name[0] for table_name in table_names]
+        short_name_str = '\n'.join(short_name_arr)
+
+        send_delayed_message(
+                f'{len(table_names)} table{plural_s} found in {channel_name}.',
+                form['response_url'],
+                attachments=short_name_str)
+
 #TODO: Add functionality to lookup multiple keys.
 def lookup(form):
     """
