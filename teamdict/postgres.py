@@ -75,10 +75,10 @@ def drop_table(form):
         drop_conf = {
                 "title": "Are you sure?",
                 "text": f"All data in {short_name} will be lost!",
-                "ok_text": f"Dropping {short_name}...",
-                "dismiss_text": "Phew that was close"
+                "ok_text": "Confirm",
+                "dismiss_text": "Cancel"
                 }
-        drop_btn = Button('drop', 'Drop {short_name}',
+        drop_btn = Button('drop', f'Drop {short_name}',
                           danger = True, confirm=drop_conf)
         cancel_btn = Button('cancel', 'Cancel')
         buttons = [drop_btn, cancel_btn]
