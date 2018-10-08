@@ -36,3 +36,10 @@ def modify():
         return queue_task(request, req_body, 'modify')
 
     return "This is from flask for slack"
+
+@app.route('/test', methods=['POST', 'GET'])
+def testing():
+    if request.method == 'POST':
+        print(request.get_data(as_text=True))
+
+    return ('', 200)

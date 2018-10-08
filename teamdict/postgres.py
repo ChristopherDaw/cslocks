@@ -14,7 +14,7 @@ correctly.
 import os
 import psycopg2
 from teamdict import app
-from teamdict.slack import send_delayed_message
+from teamdict.slack import send_delayed_message, Button
 
 conn = app.dbconn
 
@@ -70,20 +70,39 @@ def drop_table(form):
     Returns:
         None
     """
-    with conn.cursor() as cur:
+    if 'text' in form:
         short_name, table_name = get_table_names(form, 1)
-        if not is_table(table_name):
-            send_delayed_message(
-                    f'No table named `{short_name}` exists.',
-                    form['response_url'])
-            return
-
-        query = 'DROP TABLE %s;'
-        cur.execute(query, (as_is(table_name),))
+        drop_conf = {
+                "title": "Are you sure?",
+                "text": f"All data in {short_name} will be lost!",
+                "ok_text": f"Dropping {short_name}...",
+                "dismiss_text": "Phew that was close"
+                }
+        drop_btn = Button('drop', 'Drop {short_name}',
+                          danger = True, confirm=drop_conf)
+        cancel_btn = Button('cancel', 'Cancel')
+        buttons = [drop_btn, cancel_btn]
         send_delayed_message(
-                    f'Table `{short_name}` dropped!',
-                    form['response_url'])
-        conn.commit()
+                f'Are you sure you want to drop {short_name}?',
+                form['response_url'],
+                attachments='This action cannot be undone.',
+                callback_id=table_name,
+                buttons=buttons
+                )
+    else:
+        with conn.cursor() as cur:
+            short_name, table_name = add_short_name(form[callback_id])
+            if not is_table(table_name):
+                send_delayed_message(
+                        f'No table named `{short_name}` exists.',
+                        form['response_url'])
+                return
+            query = 'DROP TABLE %s;'
+            cur.execute(query, (as_is(table_name),))
+            send_delayed_message(
+                        f'Table `{short_name}` dropped!',
+                        form['response_url'])
+            conn.commit()
 
 def add_data(form):
     """

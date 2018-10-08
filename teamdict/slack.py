@@ -32,7 +32,8 @@ def send_help(command, response_url, message=''):
 
 #TODO: Flesh this out to accept the creation of buttons and other special
 #formatting like optional markdown, etc.
-def send_delayed_message(message, response_url, attachments=''):
+def send_delayed_message(message, response_url, callback_id='',
+                        attachments='', buttons=[]):
     """
     Sends a message to the response url provided in the original
     POST request with specified contents.
@@ -40,13 +41,17 @@ def send_delayed_message(message, response_url, attachments=''):
     Args:
         message (str): The contents of the base message sent to user.
         response_url (str): The url to send our response POST request to.
+        callback_id (str): Required if using buttons, id used in slack response.
         attachments (str): (Optional) The contents of the message attachment.
+        buttons (list): (Optional) A list with details for buttons in the msg.
 
     Returns:
         None
     """
+    if len(buttons) > 0:
+        buttons = [btn.dict for btn in buttons]
+
     # Slack requires the Content-type header be application/json
-    print(message + "\n" + attachments)
     headers = {'Content-type': 'application/json'}
     payload_dict = {
         "text": message,
@@ -54,10 +59,14 @@ def send_delayed_message(message, response_url, attachments=''):
         "attachments": [
             {
                 "text": attachments,
-                "mrkdwn_in": ["text"]
+                "mrkdwn_in": ["text"],
+                "callback_id": callback_id,
+                "actions": buttons
             }
         ]
     }
+
+    print(json.dumps(payload_dict, indent=2))
 
     req = requests.post(
             response_url,
@@ -65,3 +74,31 @@ def send_delayed_message(message, response_url, attachments=''):
             headers=headers
         )
 
+class Button:
+    """
+    Button object for easily sending buttons to send_delayed_message()
+
+    If included, the confirm dictionary must include 4 keys:
+        'title': Title of the confirmation message
+        'text': Text in the confirmation message
+        'ok_text': The text shown if the confirmation button is selected
+        'dismiss_text': The text shown if the confirmation button is dismissed
+    """
+    def __init__(self, name, text, danger=False, confirm={}):
+        self.name = name
+        self.text = text
+        self.danger = danger
+        self.confirm = confirm
+        self.build_dict()
+
+    def build_dict(self):
+        self.dict = {
+                "name": self.name,
+                "text": self.text,
+                "type": "button",
+                "value": self.name,
+                }
+        if self.danger:
+            self.dict["style"] = "danger"
+        if len(self.confirm) > 0:
+            self.dict["confirm"] = self.confirm
