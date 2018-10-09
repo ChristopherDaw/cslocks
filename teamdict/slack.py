@@ -30,10 +30,21 @@ def send_help(command, response_url, message=''):
     else:
         send_delayed_message(message, response_url, attachments=usage_str)
 
+def delete_original_msg(response_url):
+    """Deletes a message at the invocation of a cancelling button press"""
+    headers = {'Content-type': 'application/json'}
+    payload_dict = {'delete_original': True}
+    req = requests.post(
+            response_url,
+            data=json.dumps(payload_dict),
+            headers=headers
+        )
+
+
 #TODO: Flesh this out to accept the creation of buttons and other special
 #formatting like optional markdown, etc.
 def send_delayed_message(message, response_url, callback_id='',
-                        attachments='', buttons=[]):
+                        attachments='', buttons=[], replace_original=False):
     """
     Sends a message to the response url provided in the original
     POST request with specified contents.
@@ -44,6 +55,8 @@ def send_delayed_message(message, response_url, callback_id='',
         callback_id (str): Required if using buttons, id used in slack response.
         attachments (str): (Optional) The contents of the message attachment.
         buttons (list): (Optional) A list with details for buttons in the msg.
+        replace_original (bool): (Optional) Used only when replacing a message
+            with buttons in it with a resulting consequent message.
 
     Returns:
         None
@@ -56,6 +69,7 @@ def send_delayed_message(message, response_url, callback_id='',
     payload_dict = {
         "text": message,
         "mrkdwn": True,
+        "replace_original": replace_original,
         "attachments": [
             {
                 "text": attachments,
@@ -65,8 +79,6 @@ def send_delayed_message(message, response_url, callback_id='',
             }
         ]
     }
-
-    print(json.dumps(payload_dict, indent=2))
 
     req = requests.post(
             response_url,

@@ -70,8 +70,14 @@ def drop_table(form):
     Returns:
         None
     """
+    #Request coming from a slash command directly
     if 'text' in form:
         short_name, table_name = get_table_names(form, 1)
+        if not is_table(table_name):
+            send_delayed_message(
+                    f'No table named `{short_name}` exists.',
+                    form['response_url'])
+            return
         drop_conf = {
                 "title": "Are you sure?",
                 "text": f"All data in {short_name} will be lost!",
@@ -89,9 +95,10 @@ def drop_table(form):
                 callback_id=table_name,
                 buttons=buttons
                 )
+    #Request coming from a button press in Slack
     else:
         with conn.cursor() as cur:
-            short_name, table_name = add_short_name(form[callback_id])
+            short_name, table_name = add_short_name(form['callback_id'])
             if not is_table(table_name):
                 send_delayed_message(
                         f'No table named `{short_name}` exists.',
@@ -101,7 +108,7 @@ def drop_table(form):
             cur.execute(query, (as_is(table_name),))
             send_delayed_message(
                         f'Table `{short_name}` dropped!',
-                        form['response_url'])
+                        form['response_url'], replace_original=True)
             conn.commit()
 
 def add_data(form):
@@ -367,6 +374,7 @@ def get_channel_tables(form):
         team_domain = form['team_domain']
         channel_id = form ['channel_id']
         table_prefix = f"^{team_domain}_{channel_id}"
+        print(f'table_prefix: {table_prefix}')
 
         query = ('SELECT table_name ' +
                 'FROM information_schema.tables ' +
@@ -374,6 +382,7 @@ def get_channel_tables(form):
         cur.execute(query, (table_prefix,))
         tables = [table[0] for table in cur.fetchall()]
         short_long_names = [add_short_name(table) for table in tables]
+        print(f'short_long_names: {short_long_names}')
 
     return short_long_names
 

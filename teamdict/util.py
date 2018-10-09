@@ -6,7 +6,7 @@ October 4, 2018
 This module contains utility functions necessary for other modules of this app.
 """
 import teamdict.postgres as db
-from teamdict.slack import send_delayed_message, send_help
+from teamdict.slack import send_delayed_message, send_help, delete_original_msg
 from teamdict.validate import is_valid_request
 
 def triage_command(job_data):
@@ -25,19 +25,22 @@ def triage_command(job_data):
     response_url = form['response_url']
     slash_command = form['command']
 
-# Commented out for testing purposes
+# Comment out for testing purposes
     if not is_valid_request(job_data):
-        message = "Access denied!"
+        message = 'Access denied!'
         send_delayed_message(message, response_url)
         return
 
     text = form['text'].lower().split()
+    print(text)
 
     if len(text) == 0:
         send_help(slash_command, response_url)
         return
     else:
         command = text[0]
+
+    print(command)
 
     #TODO: Parameter checking before passing the buck to the database handler.
     if command == 'help' or command == '':
@@ -57,7 +60,7 @@ def triage_command(job_data):
             #TODO: make global vars for help and usage strings
             send_help(slash_command, response_url, message='Accepted commands')
     elif slash_command[1:] == job_type == 'lookup':
-        if text[0] == 'show':
+        if command == 'show':
             db.show_tables(form)
         elif len(text) <= 2:
             db.lookup(form)
@@ -80,13 +83,22 @@ def triage_response(job_data):
         None
     """
     form = job_data.form
-    job_type = job_data.job_type
     response_url = form['response_url']
 
-# Commented out for testing purposes
+# Comment out for testing purposes
     if not is_valid_request(job_data):
-        message = "Access denied!"
+        message = 'Access denied!'
         send_delayed_message(message, response_url)
         return
 
-
+    actions = form['actions'][0] #'actions' is an array containing only a dict
+    #TODO: sanity check on this triaging
+    if actions['value'] == 'cancel':
+        delete_original_msg(response_url)
+    elif actions['value'] == 'drop':
+        db.drop_table(form)
+    elif actions['value'] == 'delete':
+        db.delete_data(form)
+    else:
+        message = 'Action not supported!'
+        send_delayed_message(message, response_url)
