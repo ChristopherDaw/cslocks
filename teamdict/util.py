@@ -32,6 +32,7 @@ def triage_command(job_data):
         return
 
     text = form['text'].lower().split()
+    print(text)
 
     if len(text) == 0:
         send_help(slash_command, response_url)
