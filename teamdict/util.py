@@ -40,6 +40,8 @@ def triage_command(job_data):
     else:
         command = text[0]
 
+    print(command)
+
     #TODO: Parameter checking before passing the buck to the database handler.
     if command == 'help' or command == '':
         #TODO: Allow for help on specific commands /lookup help <cmd>
@@ -58,7 +60,7 @@ def triage_command(job_data):
             #TODO: make global vars for help and usage strings
             send_help(slash_command, response_url, message='Accepted commands')
     elif slash_command[1:] == job_type == 'lookup':
-        if text[0] == 'show':
+        if command == 'show':
             db.show_tables(form)
         elif len(text) <= 2:
             db.lookup(form)
