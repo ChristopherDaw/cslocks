@@ -26,10 +26,10 @@ def triage_command(job_data):
     slash_command = form['command']
 
 # Commented out for testing purposes
-#    if not is_valid_request(job_data):
-#        message = "Access denied!"
-#        send_delayed_message(message, response_url)
-#        return
+    if not is_valid_request(job_data):
+        message = "Access denied!"
+        send_delayed_message(message, response_url)
+        return
 
     text = form['text'].lower().split()
 
@@ -67,3 +67,26 @@ def triage_command(job_data):
         send_help(slash_command, response_url, message='Command not found.')
 
     return
+
+def triage_response(job_data):
+    """
+    Send the interactive response to the correct function.
+
+    Args:
+        job_data (JobData): Object containing necessary informationr
+            headers, form, and body of the original POST request.
+
+    Returns:
+        None
+    """
+    form = job_data.form
+    job_type = job_data.job_type
+    response_url = form['response_url']
+
+# Commented out for testing purposes
+    if not is_valid_request(job_data):
+        message = "Access denied!"
+        send_delayed_message(message, response_url)
+        return
+
+

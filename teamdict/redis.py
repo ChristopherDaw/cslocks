@@ -9,10 +9,11 @@ queued, a 200 response is sent to confirm receipt of payload. For the purposes
 of this module, the request is assumed to be a POST request.
 """
 import rq
+import json
 from redis import Redis
 from flask import request
 from teamdict import app
-from teamdict.util import triage_command
+from teamdict.util import triage_command, triage_response
 
 def queue_task(request, req_body, job_type):
     """
@@ -30,8 +31,13 @@ def queue_task(request, req_body, job_type):
     headers = dict(request.headers.to_list())
     form = request.form.to_dict()
 
-    job_data = JobData(headers, form, req_body, job_type)
-    rq_job = app.task_queue.enqueue(triage_command, job_data)
+    if job_type == 'response':
+        form = json.loads(form['payload'])
+        job_data = JobData(headers, form, req_body, job_type)
+        rq_job = app.task_queue.enqueue(triage_response, job_data)
+    else:
+        job_data = JobData(headers, form, req_body, job_type)
+        rq_job = app.task_queue.enqueue(triage_command, job_data)
     return ('', 200)
 
 class JobData:
