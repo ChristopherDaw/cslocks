@@ -6,7 +6,7 @@ October 4, 2018
 This module contains utility functions necessary for other modules of this app.
 """
 import teamdict.postgres as db
-from teamdict.slack import send_delayed_message, send_help
+from teamdict.slack import send_delayed_message, send_help, delete_original_msg
 from teamdict.validate import is_valid_request
 
 def triage_command(job_data):
@@ -25,9 +25,9 @@ def triage_command(job_data):
     response_url = form['response_url']
     slash_command = form['command']
 
-# Commented out for testing purposes
+# Comment out for testing purposes
     if not is_valid_request(job_data):
-        message = "Access denied!"
+        message = 'Access denied!'
         send_delayed_message(message, response_url)
         return
 
@@ -80,13 +80,22 @@ def triage_response(job_data):
         None
     """
     form = job_data.form
-    job_type = job_data.job_type
     response_url = form['response_url']
 
-# Commented out for testing purposes
+# Comment out for testing purposes
     if not is_valid_request(job_data):
-        message = "Access denied!"
+        message = 'Access denied!'
         send_delayed_message(message, response_url)
         return
 
-
+    actions = form['actions'][0] #'actions' is an array containing only a dict
+    #TODO: sanity check on this triaging
+    if actions['value'] == 'cancel':
+        delete_original_msg(response_url)
+    elif actions['value'] == 'drop':
+        db.drop_table(form)
+    elif actions['value'] == 'delete':
+        db.delete_data(form)
+    else:
+        message = 'Action not supported!'
+        send_delayed_message(message, response_url)
