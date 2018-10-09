@@ -40,7 +40,7 @@ def modify():
 @app.route('/slack/response', methods=['POST', 'GET'])
 def response():
     if request.method == 'POST':
-        print(request.get_data(as_text=True))
+        print(request.form.to_dict())
         #req_body = request.get_data(as_text=True)
         #return queue_task(request, req_body, 'modify')
 
@@ -49,6 +49,6 @@ def response():
 @app.route('/test', methods=['POST', 'GET'])
 def testing():
     if request.method == 'POST':
-        print(request.get_data(as_text=True))
+        print(request)
 
     return ('', 200)
