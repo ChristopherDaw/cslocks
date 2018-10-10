@@ -374,6 +374,7 @@ def get_channel_tables(form):
         team_domain = form['team_domain']
         channel_id = form ['channel_id']
         table_prefix = f"^{team_domain}_{channel_id}"
+        print(f'table_prefix: {table_prefix}')
 
         query = ('SELECT table_name ' +
                 'FROM information_schema.tables ' +
@@ -381,6 +382,7 @@ def get_channel_tables(form):
         cur.execute(query, (table_prefix,))
         tables = [table[0] for table in cur.fetchall()]
         short_long_names = [add_short_name(table) for table in tables]
+        print(f'short_long_names: {short_long_names}')
 
     return short_long_names
 
