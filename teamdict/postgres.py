@@ -373,7 +373,7 @@ def get_channel_tables(form):
     with conn.cursor() as cur:
         team_domain = form['team_domain']
         channel_id = form ['channel_id']
-        table_prefix = f"^{team_domain}_{channel_id}"
+        table_prefix = f"^{team_domain}_{channel_id}".lower()
         print(f'table_prefix: {table_prefix}')
 
         query = ('SELECT table_name ' +
