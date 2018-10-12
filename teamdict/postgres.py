@@ -15,7 +15,7 @@ import os
 import psycopg2
 from datetime import datetime
 from hashlib import blake2b
-from slack import url_for
+from flask import url_for
 from teamdict import app
 from teamdict.slack import send_delayed_message, Button
 

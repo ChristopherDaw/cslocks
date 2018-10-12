@@ -27,10 +27,10 @@ with app.dbconn.cursor() as cur:
             'url_ext VARCHAR PRIMARY KEY, ' +
             'table_name VARCHAR, ' +
             'response_url VARCHAR, ' +
-            'exp_date TIMESTAMP NOT NULL DEFAULT now() + interval "5 minutes"' +
+            "exp_date TIMESTAMP NOT NULL DEFAULT now() + interval '5 minutes'" +
             ');')
     cur.execute(query)
-    conn.commit()
+    app.dbconn.commit()
 
 # Allow app to find @app.route views
 from teamdict import views
