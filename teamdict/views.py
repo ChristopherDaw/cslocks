@@ -45,6 +45,24 @@ def response():
 
     return "This is from flask for slack"
 
+@app.route('/slack/data_entry/<ext>', methods=['POST', 'GET'])
+def data_entry(ext):
+    if request.method == 'GET':
+        print(ext)
+        the_time = datetime.now().strftime("%A, %d %b %Y %l:%M %p")
+        return """
+        <h1>Hello heroku</h1>
+        <p>It is currently {time}.</p>
+
+        <img src="http://loremflickr.com/600/400/bird">
+        """.format(time=the_time)
+
+    elif request.method == 'POST':
+        req_body = request.get_data(as_text=True)
+        return queue_task(request, req_body, 'response')
+
+    return "This is from flask for slack"
+
 @app.route('/test', methods=['POST', 'GET'])
 def testing():
     if request.method == 'POST':

@@ -13,6 +13,9 @@ correctly.
 
 import os
 import psycopg2
+from datetime import datetime
+from hashlib import blake2b
+from slack import url_for
 from teamdict import app
 from teamdict.slack import send_delayed_message, Button
 
@@ -37,10 +40,7 @@ def create_table(form):
     """
     with conn.cursor() as cur:
         short_name, table_name = get_table_names(form, 1)
-        if is_table(table_name):
-            send_delayed_message(
-                    f'Table `{short_name}` exists.',
-                    form['response_url'])
+        if table_name is None:
             return
 
         query = ('CREATE TABLE %s (' +
@@ -55,8 +55,6 @@ def create_table(form):
                     form['response_url'])
         conn.commit()
 
-#TODO: Add a confirmation button/text to ensure the user wants to delete a table
-#Slack api has "destructive buttons" for confirmation of destructive actions.
 def drop_table(form):
     """
     Build and execute a query to drop a table from the database given the table
@@ -73,11 +71,9 @@ def drop_table(form):
     #Request coming from a slash command directly
     if 'text' in form:
         short_name, table_name = get_table_names(form, 1)
-        if not is_table(table_name):
-            send_delayed_message(
-                    f'No table named `{short_name}` exists.',
-                    form['response_url'])
+        if table_name is None:
             return
+
         drop_conf = {
                 "title": "Are you sure?",
                 "text": f"All data in {short_name} will be lost!",
@@ -130,10 +126,7 @@ def add_data(form):
     """
     with conn.cursor() as cur:
         short_name, table_name = get_table_names(form, 1)
-        if not is_table(table_name):
-            send_delayed_message(
-                    f'No table named `{short_name}` exists.',
-                    form['response_url'])
+        if table_name is None:
             return
 
         text = form['text'].split()
@@ -155,6 +148,31 @@ def add_data(form):
                 form['response_url'])
         conn.commit()
 
+def data_entry(form):
+    """Prepare a url for mass data entry"""
+    with conn.cursor() as cur:
+        response_url = form['response_url']
+        short_name, table_name = get_table_names(form, 1)
+        if table_name is None:
+            return
+
+        user_id = form['user_id']
+        url_ext = blake2b(f'{user_id} {datetime.now()}'.encode('utf-8'),
+                          digest_size=20).hexdigest()
+        query = ('INSERT INTO data_entry_queue ' +
+                '(url_ext, table_name, response_url) ' +
+                'VALUES (%s, %s, %s);')
+        cur.execute(query, (url_ext, table_name, response_url,))
+
+        url = url_for('data_entry', ext=url_ext)
+        send_delayed_message(
+                #TODO: Find way to dynamically generate url for (url_ext)
+                f'Upload your data here:',
+                response_url,
+                attachments=f'<{url}>\nThis link will expire in 2 minutes.')
+
+        conn.commit
+
 def delete_data(form):
     """
     Delete a row from the specified table where the key matches the given key.
@@ -169,10 +187,7 @@ def delete_data(form):
     """
     with conn.cursor() as cur:
         short_name, table_name = get_table_names(form, 1)
-        if not is_table(table_name):
-            send_delayed_message(
-                    f'No table named `{short_name}` exists.',
-                    form['response_url'])
+        if table_name is None:
             return
 
         text = form['text'].lower().split()
@@ -245,6 +260,8 @@ def lookup(form):
                 values_found.append((short_name, value))
     elif len(text) == 2: #Find 'key' in the given table name
         names = get_table_names(form, 1)
+        if names[0] is None:
+            return
         short_name = names[0]
         value = lookup_helper(form, key, names)
         values_found.append((short_name, value))
@@ -337,7 +354,11 @@ def get_table_names(form, tn_index):
     channel_id = form['channel_id']
     short_name = text[tn_index]
     table_name = f'{team_domain}_{channel_id}_{short_name}'
-
+    if not is_table(table_name):
+        send_delayed_message(
+                f'No table named `{short_name}` exists.',
+                form['response_url'])
+        return (None, None)
     return (short_name, table_name)
 
 def add_short_name(table_name):
@@ -374,7 +395,6 @@ def get_channel_tables(form):
         team_domain = form['team_domain']
         channel_id = form ['channel_id']
         table_prefix = f"^{team_domain}_{channel_id}".lower()
-        print(f'table_prefix: {table_prefix}')
 
         query = ('SELECT table_name ' +
                 'FROM information_schema.tables ' +
@@ -382,7 +402,6 @@ def get_channel_tables(form):
         cur.execute(query, (table_prefix,))
         tables = [table[0] for table in cur.fetchall()]
         short_long_names = [add_short_name(table) for table in tables]
-        print(f'short_long_names: {short_long_names}')
 
     return short_long_names
 
@@ -407,10 +426,7 @@ def is_table(table_name):
         cur.execute(query, (table_name,))
         result = cur.fetchone()[0]
 
-    if result:
-        return result
-    else:
-        return False
+    return result
 
 def as_is(table_name):
     """Returns an AsIs object to avoid quoted table_names for db queries."""

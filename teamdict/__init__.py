@@ -21,5 +21,16 @@ app.task_queue = rq.Queue(connection=conn)
 app.logger.addHandler(logging.StreamHandler(sys.stdout))
 app.dbconn = psycopg2.connect(app.config['DATABASE_URL'], sslmode='require')
 
+# Set up database table for mass data entry
+with app.dbconn.cursor() as cur:
+    query = ('CREATE TABLE IF NOT EXISTS data_entry_queue (' +
+            'url_ext VARCHAR PRIMARY KEY, ' +
+            'table_name VARCHAR, ' +
+            'response_url VARCHAR, ' +
+            'exp_date TIMESTAMP NOT NULL DEFAULT now() + interval "5 minutes"' +
+            ');')
+    cur.execute(query)
+    conn.commit()
+
 # Allow app to find @app.route views
 from teamdict import views
