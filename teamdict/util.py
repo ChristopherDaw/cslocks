@@ -52,8 +52,10 @@ def triage_command(job_data):
             db.create_table(form)
         elif command == 'drop':
             db.drop_table(form)
-        elif command == 'add' or command == 'populate':
+        elif command == 'add':
             db.add_data(form)
+        elif command == 'populate':
+            db.data_entry(form)
         elif command == 'delete':
             db.delete_data(form)
         else:
