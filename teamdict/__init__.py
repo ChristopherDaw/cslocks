@@ -30,7 +30,7 @@ with app.dbconn.cursor() as cur:
             "exp_date TIMESTAMP NOT NULL DEFAULT now() + interval '5 minutes'" +
             ');')
     cur.execute(query)
-    conn.commit()
+    app.dbconn.commit()
 
 # Allow app to find @app.route views
 from teamdict import views
