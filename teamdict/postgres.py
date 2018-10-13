@@ -159,12 +159,20 @@ def data_entry(form):
         user_id = form['user_id']
         url_ext = blake2b(f'{user_id} {datetime.now()}'.encode('utf-8'),
                           digest_size=20).hexdigest()
+        url = ''
+        with app.app_context():
+            url = url_for('data_entry', ext=url_ext)
+        if url == '':
+            send_delayed_message(
+                    f'Could not generate URL for data entry.',
+                    response_url)
+            return
+
         query = ('INSERT INTO data_entry_queue ' +
                 '(url_ext, table_name, response_url) ' +
                 'VALUES (%s, %s, %s);')
         cur.execute(query, (url_ext, table_name, response_url,))
 
-        url = url_for('data_entry', ext=url_ext)
         send_delayed_message(
                 #TODO: Find way to dynamically generate url for (url_ext)
                 f'Upload your data here:',
