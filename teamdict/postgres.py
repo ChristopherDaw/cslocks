@@ -354,7 +354,7 @@ def get_table_names(form, tn_index):
     channel_id = form['channel_id']
     short_name = text[tn_index]
     table_name = f'{team_domain}_{channel_id}_{short_name}'
-    if not is_table(table_name):
+    if not is_table(table_name) and not text[0] == 'create':
         send_delayed_message(
                 f'No table named `{short_name}` exists.',
                 form['response_url'])
