@@ -49,6 +49,7 @@ def response():
 @app.route('/data_entry/<ext>', methods=['POST', 'GET'])
 def data_entry(ext):
     if request.method == 'GET':
+        verify_ext(ext)
         the_time = datetime.now().strftime("%A, %d %b %Y %l:%M %p")
         return """
         <h1>Hello heroku</h1>
@@ -69,3 +70,18 @@ def testing():
         print(request)
 
     return ('', 200)
+
+def verify_ext(ext):
+    """Take an extension from /data_entry/<ext> and ensure it's in the
+    data_entry_queue"""
+    with app.dbconn.cursor() as cur:
+        query = ('DELETE FROM data_entry_queue WHERE ' +
+                'url_ext = %s RETURNING *;')
+        cur.execute(query, (ext,))
+        results = cur.fetchall()
+        print(results)
+
+        #TODO: Find what was returned by the query if anything
+
+        app.dbconn.commit()
+
