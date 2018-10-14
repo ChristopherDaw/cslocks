@@ -56,7 +56,8 @@ def data_entry(ext):
             return ("<h1>Try again</h1>", 403)
         elif len(data) > 0:
             response_url = data[0][2]
-            delete_original_msg(response_url)
+            #TODO: Find way to delete or change message with the url in it after user follows link
+            #delete_original_msg(response_url)
             send_delayed_message("Thank you", response_url, replace_original=True)
             the_time = datetime.now().strftime("%A, %d %b %Y %l:%M %p")
             return ("""
