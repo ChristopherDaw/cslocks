@@ -15,7 +15,7 @@ import os
 import psycopg2
 from datetime import datetime
 from hashlib import blake2b
-from flask import url_for
+from flask import request
 from teamdict import app
 from teamdict.slack import send_delayed_message, Button
 
@@ -148,7 +148,7 @@ def add_data(form):
                 form['response_url'])
         conn.commit()
 
-def data_entry(form):
+def data_entry(form, url):
     """Prepare a url for mass data entry"""
     with conn.cursor() as cur:
         response_url = form['response_url']
@@ -159,14 +159,7 @@ def data_entry(form):
         user_id = form['user_id']
         url_ext = blake2b(f'{user_id} {datetime.now()}'.encode('utf-8'),
                           digest_size=20).hexdigest()
-        url = ''
-        with app.app_context():
-            url = url_for('data_entry', ext=url_ext)
-        if url == '':
-            send_delayed_message(
-                    f'Could not generate URL for data entry.',
-                    response_url)
-            return
+        url = f'{url}data_entry/{url_ext}'
 
         query = ('INSERT INTO data_entry_queue ' +
                 '(url_ext, table_name, response_url) ' +
@@ -174,12 +167,11 @@ def data_entry(form):
         cur.execute(query, (url_ext, table_name, response_url,))
 
         send_delayed_message(
-                #TODO: Find way to dynamically generate url for (url_ext)
                 f'Upload your data here:',
                 response_url,
                 attachments=f'<{url}>\nThis link will expire in 2 minutes.')
 
-        conn.commit
+        conn.commit()
 
 def delete_data(form):
     """

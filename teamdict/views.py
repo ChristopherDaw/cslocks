@@ -31,6 +31,7 @@ def lookup():
 
 @app.route('/slack/modify', methods=['POST', 'GET'])
 def modify():
+    print(request.url_root)
     if request.method == 'POST':
         req_body = request.get_data(as_text=True)
         return queue_task(request, req_body, 'modify')
@@ -45,10 +46,9 @@ def response():
 
     return "This is from flask for slack"
 
-@app.route('/slack/data_entry/<ext>', methods=['POST', 'GET'])
+@app.route('/data_entry/<ext>', methods=['POST', 'GET'])
 def data_entry(ext):
     if request.method == 'GET':
-        print(ext)
         the_time = datetime.now().strftime("%A, %d %b %Y %l:%M %p")
         return """
         <h1>Hello heroku</h1>
