@@ -22,6 +22,7 @@ def triage_command(job_data):
     """
     form = job_data.form
     job_type = job_data.job_type
+    url = job_data.url
     response_url = form['response_url']
     slash_command = form['command']
 
@@ -55,7 +56,7 @@ def triage_command(job_data):
         elif command == 'add':
             db.add_data(form)
         elif command == 'populate':
-            db.data_entry(form)
+            db.data_entry(form, url)
         elif command == 'delete':
             db.delete_data(form)
         else:

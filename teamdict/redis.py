@@ -30,20 +30,22 @@ def queue_task(request, req_body, job_type):
     """
     headers = dict(request.headers.to_list())
     form = request.form.to_dict()
+    url = request.url_root
 
     if job_type == 'response':
         form = json.loads(form['payload'])
-        job_data = JobData(headers, form, req_body, job_type)
+        job_data = JobData(headers, form, url, req_body, job_type)
         rq_job = app.task_queue.enqueue(triage_response, job_data)
     else:
-        job_data = JobData(headers, form, req_body, job_type)
+        job_data = JobData(headers, form, url,  req_body, job_type)
         rq_job = app.task_queue.enqueue(triage_command, job_data)
     return ('', 200)
 
 class JobData:
     """JobData object for communicating a job's data to triage_command()"""
-    def __init__(self, headers, form, body, job_type):
+    def __init__(self, headers, form, url, body, job_type):
         self.headers = headers
         self.form = form
+        self.url = url
         self.body = body
         self.job_type = job_type
