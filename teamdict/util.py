@@ -5,9 +5,10 @@ October 4, 2018
 
 This module contains utility functions necessary for other modules of this app.
 """
-import teamdict.postgres as db
+from teamdict import app
 from teamdict.slack import send_delayed_message, send_help, delete_original_msg
 from teamdict.validate import is_valid_request
+import teamdict.postgres as db
 
 def triage_command(job_data):
     """

@@ -8,6 +8,7 @@ This module defines the routes for flask endpoints.
 from flask import request
 from datetime import datetime
 from teamdict import app
+from teamdict.postgres import verify_ext
 from teamdict.redis import queue_task
 from teamdict.slack import send_delayed_message, delete_original_msg
 
@@ -55,17 +56,19 @@ def data_entry(ext):
             #Render failure page
             return ("<h1>Try again</h1>", 403)
         elif len(data) > 0:
-            response_url = data[0][2]
-            #TODO: Find way to delete or change message with the url in it after user follows link
-            #delete_original_msg(response_url)
+            #Render data entry page
+            db_row = data[0]
+            response_url = db_row[2]
+            table_name = db_row[1]
+            #TODO: Find way to delete or change message with the url in it
             send_delayed_message("Thank you", response_url, replace_original=True)
             the_time = datetime.now().strftime("%A, %d %b %Y %l:%M %p")
             return ("""
-            <h1>Hello heroku</h1>
+            <h1>Populate {table_name}</h1>
             <p>It is currently {time}.</p>
 
             <img src="http://loremflickr.com/600/400/bird">
-            """.format(time=the_time), 200)
+            """.format(table_name=table_name,time=the_time), 200)
 
     return "This is from flask for slack"
 
@@ -75,17 +78,4 @@ def testing():
         print(request)
 
     return ('', 200)
-
-def verify_ext(ext):
-    """Take an extension from /data_entry/<ext> and ensure it's in the
-    data_entry_queue"""
-    with app.dbconn.cursor() as cur:
-        query = ('DELETE FROM data_entry_queue WHERE ' +
-                'url_ext = %s RETURNING *;')
-        cur.execute(query, (ext,))
-        results = cur.fetchall()
-
-        app.dbconn.commit()
-
-        return results
 

@@ -331,6 +331,23 @@ def lookup_helper(form, key, table_names):
     else:
         return result
 
+def verify_ext(ext):
+    """take an extension from /data_entry/<ext> and ensure it's in the
+    data_entry_queue table"""
+    with conn.cursor() as cur:
+        query = ('DELETE FROM data_entry_queue WHERE ' +
+                'url_ext = %s RETURNING *;')
+        cur.execute(query, (ext,))
+        results = cur.fetchall()
+        print(results)
+        #Check if request has not expired
+        if results[3] > datetime.now():
+            results = []
+        print(results)
+        conn.commit()
+
+        return results
+
 #######################
 #  UTILITY FUNCTIONS  #
 ######################
