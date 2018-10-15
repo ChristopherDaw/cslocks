@@ -342,7 +342,7 @@ def verify_ext(ext):
         print(results)
         print(datetime.now())
         #Check if request has not expired
-        if len(results) > 0 and results[3] > datetime.now():
+        if len(results) > 0 and results[0][4] > datetime.now():
             results = []
         print(results)
         conn.commit()
