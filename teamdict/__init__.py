@@ -28,7 +28,7 @@ with app.dbconn.cursor() as cur:
             'table_name VARCHAR, ' +
             'response_url VARCHAR, ' +
             'user_id VARCHAR, ' +
-            "exp_date TIMESTAMPTZ NOT NULL DEFAULT now() + interval '2 minutes'" +
+            "exp_date TIMESTAMP NOT NULL DEFAULT now() + interval '2 minutes'" +
             ');')
     cur.execute(query)
     app.dbconn.commit()
