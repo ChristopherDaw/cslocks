@@ -162,9 +162,9 @@ def data_entry(form, url):
         url = f'{url}data_entry/{url_ext}'
 
         query = ('INSERT INTO data_entry_queue ' +
-                '(url_ext, table_name, response_url) ' +
-                'VALUES (%s, %s, %s);')
-        cur.execute(query, (url_ext, table_name, response_url,))
+                '(url_ext, table_name, response_url, user_id) ' +
+                'VALUES (%s, %s, %s, %s);')
+        cur.execute(query, (url_ext, table_name, response_url, user_id,))
 
         send_delayed_message(
                 f'Upload your data here:',
