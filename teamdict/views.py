@@ -61,6 +61,8 @@ def data_entry(ext):
             response_url = db_row[2]
             table_name = db_row[1]
             #TODO: Find way to delete or change message with the url in it
+            #TODO: Use "Link Buttons" instead of a plain url so that we can
+            # use the "replace_original" flag on the message with the url
             send_delayed_message("Thank you", response_url, replace_original=True)
             the_time = datetime.now().strftime("%A, %d %b %Y %l:%M %p")
             return ("""

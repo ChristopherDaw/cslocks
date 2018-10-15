@@ -106,3 +106,19 @@ def triage_response(job_data):
     else:
         message = 'Action not supported!'
         send_delayed_message(message, response_url)
+
+def handle_file_upload(csv_file, data_entry_row):
+    key = ''
+    value = ''
+    key_value_dict = {}
+    with open(csv_file, mode='r') as user_data:
+        for row in user_data:
+            data = row.rstrip('\n').split(',')
+            if len(data) < 2:
+                #Improper formatting for this key-value pair
+                continue
+            key = data[0]
+            value = ' '.join(data[1:])
+            key_value_dict[key] = value
+
+    return key_value_dict
