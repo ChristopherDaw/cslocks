@@ -103,8 +103,10 @@ def triage_response(job_data):
         db.drop_table(form)
     elif actions['value'] == 'delete':
         db.delete_data(form)
+    elif actions['value'] == 'url_button':
+        delete_original_msg(response_url)
     else:
-        message = 'Action not supported!'
+        message = f'Action `{actions["value"]}` not supported!'
         send_delayed_message(message, response_url)
 
 def handle_file_upload(csv_file, data_entry_row):

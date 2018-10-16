@@ -64,18 +64,19 @@ def send_delayed_message(message, response_url, callback_id='',
     if len(buttons) > 0:
         buttons = [btn.dict for btn in buttons]
 
+    print(buttons)
     # Slack requires the Content-type header be application/json
     headers = {'Content-type': 'application/json'}
     payload_dict = {
-        "text": message,
-        "mrkdwn": True,
-        "replace_original": replace_original,
-        "attachments": [
+        'text': message,
+        'mrkdwn': True,
+        'replace_original': replace_original,
+        'attachments': [
             {
-                "text": attachments,
-                "mrkdwn_in": ["text"],
-                "callback_id": callback_id,
-                "actions": buttons
+                'text': attachments,
+                'mrkdwn_in': ['text'],
+                'callback_id': callback_id,
+                'actions': buttons
             }
         ]
     }
@@ -96,21 +97,27 @@ class Button:
         'ok_text': The text shown if the confirmation button is selected
         'dismiss_text': The text shown if the confirmation button is dismissed
     """
-    def __init__(self, name, text, danger=False, confirm={}):
+    def __init__(self, name, text, danger=False, confirm={}, url='', style=''):
         self.name = name
         self.text = text
         self.danger = danger
         self.confirm = confirm
+        self.url = url
+        self.style = style
         self.build_dict()
 
     def build_dict(self):
         self.dict = {
-                "name": self.name,
-                "text": self.text,
-                "type": "button",
-                "value": self.name,
+                'name': self.name,
+                'text': self.text,
+                'type': 'button',
+                'value': self.name,
                 }
-        if self.danger:
-            self.dict["style"] = "danger"
         if len(self.confirm) > 0:
-            self.dict["confirm"] = self.confirm
+            self.dict['confirm'] = self.confirm
+        if self.style:
+            self.dict['style'] = self.style
+        if self.danger:
+            self.dict['style'] = 'danger'
+        if self.url:
+            self.dict['url'] = self.url

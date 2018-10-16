@@ -166,10 +166,15 @@ def data_entry(form, url):
                 'VALUES (%s, %s, %s, %s);')
         cur.execute(query, (url_ext, table_name, response_url, user_id,))
 
+        url_button = Button('url_button', 'Enter Data Here', url=url,
+                            style='primary')
+        cancel_button = Button('cancel', 'Cancel')
         send_delayed_message(
                 f'Upload your data here:',
                 response_url,
-                attachments=f'<{url}>\nThis link will expire in 2 minutes.')
+                attachments=f'This one-time link will expire in 2 minutes.',
+                callback_id=url_ext,
+                buttons=[url_button, cancel_button])
 
         conn.commit()
 
@@ -339,12 +344,9 @@ def verify_ext(ext):
                 'url_ext = %s RETURNING *;')
         cur.execute(query, (ext,))
         results = cur.fetchall()
-        print(results)
-        print(datetime.now())
         #Check if request has not expired
         if len(results) > 0 and results[0][4] < datetime.now():
             results = []
-        print(results)
         conn.commit()
 
         return results
