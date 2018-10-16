@@ -166,8 +166,8 @@ def data_entry(form, url):
                 'VALUES (%s, %s, %s, %s);')
         cur.execute(query, (url_ext, table_name, response_url, user_id,))
 
-        url_button = Button('url_button', 'Enter Data Here', url=url,
-                            style='primary')
+        done_button = Button('done', 'Done', style='primary')
+        url_button = Button('url_button', 'Enter Data Here', url=url)
         cancel_button = Button('cancel', 'Cancel')
         send_delayed_message(
                 f'Upload your data here:',

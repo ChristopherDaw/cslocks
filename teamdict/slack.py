@@ -44,7 +44,8 @@ def delete_original_msg(response_url):
 #TODO: Flesh this out to accept the creation of buttons and other special
 #formatting like optional markdown, etc.
 def send_delayed_message(message, response_url, callback_id='',
-                        attachments='', buttons=[], replace_original=False):
+                        attachments='', buttons=[], replace_original=False,
+                        response_type='ephemeral'):
     """
     Sends a message to the response url provided in the original
     POST request with specified contents.
@@ -57,6 +58,7 @@ def send_delayed_message(message, response_url, callback_id='',
         buttons (list): (Optional) A list with details for buttons in the msg.
         replace_original (bool): (Optional) Used only when replacing a message
             with buttons in it with a resulting consequent message.
+        response_type (str): Whether or not message is ephemeral or in channel.
 
     Returns:
         None
@@ -68,6 +70,7 @@ def send_delayed_message(message, response_url, callback_id='',
     # Slack requires the Content-type header be application/json
     headers = {'Content-type': 'application/json'}
     payload_dict = {
+        'response_type': response_type,
         'text': message,
         'mrkdwn': True,
         'replace_original': replace_original,
@@ -86,6 +89,31 @@ def send_delayed_message(message, response_url, callback_id='',
             data=json.dumps(payload_dict),
             headers=headers
         )
+
+    print(f'req headers: {req.headers}\nreq text: {req.text}\nreq content: {req.content})')
+
+def api_call(method, **kwargs):
+    """
+    Call a Slack api method.
+
+    Args:
+        method (str): The API method to be called, 'methodfamily.method'.
+
+    Kwargs:
+        kwargs (Optional): Arguments required by the specified api method.
+
+    Returns:
+        JSON response from Slack
+    """
+    post_url = f'https://slack.com/.api/{method}'
+    headers = {'Content-type': 'application/x-www-form-encoded'}
+    data = {}
+    for key, value in kwargs:
+        data[key] = value
+
+    req = requests.post(post_url, headers=headers, data=data)
+    json_response = json.loads(req.text)
+    return json.dumps(json_response)
 
 class Button:
     """

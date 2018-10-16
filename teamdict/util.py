@@ -6,7 +6,7 @@ October 4, 2018
 This module contains utility functions necessary for other modules of this app.
 """
 from teamdict import app
-from teamdict.slack import send_delayed_message, send_help, delete_original_msg
+from teamdict.slack import *
 from teamdict.validate import is_valid_request
 import teamdict.postgres as db
 
@@ -99,12 +99,18 @@ def triage_response(job_data):
     #TODO: sanity check on this triaging
     if actions['value'] == 'cancel':
         delete_original_msg(response_url)
+    elif actions['value'] == 'done':
+        message = "Thank You!"
+        send_delayed_message(message, response_url, replace_original=True)
     elif actions['value'] == 'drop':
         db.drop_table(form)
     elif actions['value'] == 'delete':
         db.delete_data(form)
     elif actions['value'] == 'url_button':
-        delete_original_msg(response_url)
+        channel = form['channel']['id']
+        message_ts = form['message_ts']
+        api_call('chat.delete', token=app.config['ACCESS_TOKEN'],
+                channel=channel, ts=message_ts)
     else:
         message = f'Action `{actions["value"]}` not supported!'
         send_delayed_message(message, response_url)

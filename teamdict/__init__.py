@@ -15,7 +15,8 @@ app = Flask(__name__, static_folder=None)
 app.config.update({
     'SIGNING_SECRET': os.environ.get('SIGNING_SECRET'),
     'REDIS_URL': os.environ.get('REDIS_URL','redis://'),
-    'DATABASE_URL': os.environ.get('DATABASE_URL')
+    'DATABASE_URL': os.environ.get('DATABASE_URL'),
+    'ACCESS_TOKEN': os.environ.get('ACCESS_TOKEN')
 })
 app.task_queue = rq.Queue(connection=conn)
 app.logger.addHandler(logging.StreamHandler(sys.stdout))
