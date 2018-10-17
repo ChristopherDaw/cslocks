@@ -34,15 +34,12 @@ def triage_command(job_data):
         return
 
     text = form['text'].lower().split()
-    print(text)
 
     if len(text) == 0:
         send_help(slash_command, response_url)
         return
     else:
         command = text[0]
-
-    print(command)
 
     #TODO: Parameter checking before passing the buck to the database handler.
     if command == 'help' or command == '':
@@ -114,6 +111,11 @@ def triage_response(job_data):
     else:
         message = f'Action `{actions["value"]}` not supported!'
         send_delayed_message(message, response_url)
+
+def handle_data_entry(job_data):
+    form = job_data.form
+
+    print(f'Form from handle_data_entry:\n{form}')
 
 def handle_file_upload(csv_file, data_entry_row):
     key = ''

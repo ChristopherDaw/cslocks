@@ -13,7 +13,7 @@ import json
 from redis import Redis
 from flask import request
 from teamdict import app
-from teamdict.util import triage_command, triage_response
+from teamdict.util import *
 
 def queue_task(request, req_body, job_type):
     """
@@ -36,6 +36,9 @@ def queue_task(request, req_body, job_type):
         form = json.loads(form['payload'])
         job_data = JobData(headers, form, url, req_body, job_type)
         rq_job = app.task_queue.enqueue(triage_response, job_data)
+    elif job_type == 'data_entry':
+        job_data = JobData(headers, form, url, req_body, job_type)
+        rq_job = app.task_queue.enqueue(handle_data_entry, job_data)
     else:
         job_data = JobData(headers, form, url,  req_body, job_type)
         rq_job = app.task_queue.enqueue(triage_command, job_data)

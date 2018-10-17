@@ -14,10 +14,11 @@ correctly.
 import os
 import psycopg2
 from datetime import datetime
-from hashlib import blake2b
 from flask import request
+from hashlib import blake2b
+from urllib.parse import urlencode
 from teamdict import app
-from teamdict.slack import send_delayed_message, Button
+from teamdict.slack import *
 
 conn = app.dbconn
 
@@ -131,7 +132,7 @@ def add_data(form):
 
         text = form['text'].split()
         key = text[2]
-        value = text[3]
+        value = ' '.join(text[3:])
         query = ('INSERT INTO %s (key, value) ' +
                 'VALUES (%s, %s);')
         try:
@@ -166,15 +167,31 @@ def data_entry(form, url):
                 'VALUES (%s, %s, %s, %s);')
         cur.execute(query, (url_ext, table_name, response_url, user_id,))
 
-        done_button = Button('done', 'Done', style='primary')
-        url_button = Button('url_button', 'Enter Data Here', url=url)
+        # Use api call for data_entry to allow for editing the message later
+        url_button = Button('url_button', 'Enter Data Here', url=url,
+                            style='primary')
         cancel_button = Button('cancel', 'Cancel')
-        send_delayed_message(
-                f'Upload your data here:',
-                response_url,
-                attachments=f'This one-time link will expire in 2 minutes.',
-                callback_id=url_ext,
-                buttons=[url_button, cancel_button])
+        buttons = [url_button.dict, cancel_button.dict]
+        attachments = [{
+                'actions': buttons,
+                'text': 'Button expires in two minutes',
+                'color': '#003F87',
+                'callback_id': url,
+                'fallback': url,
+                }]
+
+        token = app.config['ACCESS_TOKEN']
+        channel = form['channel_id']
+        user = form['user_id']
+        text = f'Upload CSV Data Here:'
+        response = api_call('chat.postEphemeral', token=token, channel=channel,
+                user=user, text=text, attachments=json.dumps(attachments))
+
+        # Add message timestamp to data_entry queue
+        message_ts = response['message_ts']
+        query = ('UPDATE data_entry_queue ' +
+                'SET message_ts = %s;')
+        cur.execute(query, (message_ts,))
 
         conn.commit()
 

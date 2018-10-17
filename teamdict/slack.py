@@ -40,9 +40,6 @@ def delete_original_msg(response_url):
             headers=headers
         )
 
-
-#TODO: Flesh this out to accept the creation of buttons and other special
-#formatting like optional markdown, etc.
 def send_delayed_message(message, response_url, callback_id='',
                         attachments='', buttons=[], replace_original=False,
                         response_type='ephemeral'):
@@ -66,7 +63,6 @@ def send_delayed_message(message, response_url, callback_id='',
     if len(buttons) > 0:
         buttons = [btn.dict for btn in buttons]
 
-    print(buttons)
     # Slack requires the Content-type header be application/json
     headers = {'Content-type': 'application/json'}
     payload_dict = {
@@ -90,26 +86,28 @@ def send_delayed_message(message, response_url, callback_id='',
             headers=headers
         )
 
-    print(f'req headers: {req.headers}\nreq text: {req.text}\nreq content: {req.content})')
 
-def api_call(method, **kwargs):
+def api_call(method, token=None, **data):
     """
     Call a Slack api method.
 
     Args:
         method (str): The API method to be called, 'methodfamily.method'.
+        token (str): (Optional) Auth token must be provided here or in kwargs.
 
     Kwargs:
-        kwargs (Optional): Arguments required by the specified api method.
+        kwargs: (Optional) Arguments required by the specified api method.
 
     Returns:
         JSON response from Slack
     """
-    post_url = f'https://slack.com/.api/{method}'
-    headers = {'Content-type': 'application/x-www-form-encoded'}
-    data = {}
-    for key, value in kwargs:
-        data[key] = value
+    post_url = f'https://slack.com/api/{method}'
+    if data is not None and token is None and 'token' in data:
+        token = data['token']
+    headers = {
+            'Content-type': 'application/x-www-form-urlencoded',
+            'Authorization': f'Bearer {token}'
+            }
 
     req = requests.post(post_url, headers=headers, data=data)
     json_response = json.loads(req.text)

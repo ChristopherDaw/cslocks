@@ -5,12 +5,13 @@ October 4, 2018
 
 This module defines the routes for flask endpoints.
 """
+import json
 from flask import request
 from datetime import datetime
 from teamdict import app
 from teamdict.postgres import verify_ext
 from teamdict.redis import queue_task
-from teamdict.slack import send_delayed_message, delete_original_msg
+from teamdict.slack import *
 
 @app.route('/')
 def homepage():
@@ -33,7 +34,6 @@ def lookup():
 
 @app.route('/slack/modify', methods=['POST', 'GET'])
 def modify():
-    print(request.url_root)
     if request.method == 'POST':
         req_body = request.get_data(as_text=True)
         return queue_task(request, req_body, 'modify')
@@ -53,17 +53,19 @@ def data_entry(ext):
     if request.method == 'GET':
         data = verify_ext(ext)
         if len(data) == 0:
-            #Render failure page
+            # Render failure page
             return ("<h1>Try again</h1>", 403)
         elif len(data) > 0:
-            #Render data entry page
+            # Extract data from database row and modify request
             db_row = data[0]
-            response_url = db_row[2]
             table_name = db_row[1]
-            #TODO: Find way to delete or change message with the url in it
-            #TODO: Use "Link Buttons" instead of a plain url so that we can
-            # use the "replace_original" flag on the message with the url
-            send_delayed_message("Thank you", response_url, replace_original=True)
+            res_data = json.loads(response.get_data())
+            res_data['data_entry'] = db_row
+            response.set_data(json.dumps(res_data))
+            req_body = request.get_data(as_text=True)
+            queue_task(request, req_body, 'data_entry')
+
+            # Render data entry page
             the_time = datetime.now().strftime("%A, %d %b %Y %l:%M %p")
             return ("""
             <h1>Populate {table_name}</h1>
@@ -77,7 +79,6 @@ def data_entry(ext):
 @app.route('/test', methods=['POST', 'GET'])
 def testing():
     if request.method == 'POST':
-        print(request)
-
+        print(request.get_data(as_text=True))
     return ('', 200)
 
