@@ -13,10 +13,10 @@ correctly.
 
 import os
 import psycopg2
+import psycopg2.extras
 from datetime import datetime
 from flask import request
 from hashlib import blake2b
-from urllib.parse import urlencode
 from teamdict import app
 from teamdict.slack import *
 
@@ -158,14 +158,16 @@ def data_entry(form, url):
             return
 
         user_id = form['user_id']
+        channel_id = form['channel_id']
         url_ext = blake2b(f'{user_id} {datetime.now()}'.encode('utf-8'),
                           digest_size=20).hexdigest()
         url = f'{url}data_entry/{url_ext}'
 
         query = ('INSERT INTO data_entry_queue ' +
-                '(url_ext, table_name, response_url, user_id) ' +
-                'VALUES (%s, %s, %s, %s);')
-        cur.execute(query, (url_ext, table_name, response_url, user_id,))
+                '(url_ext, table_name, response_url, user_id, channel_id) ' +
+                'VALUES (%s, %s, %s, %s, %s);')
+        cur.execute(query, (url_ext, table_name, response_url, user_id,
+                            channel_id,))
 
         # Use api call for data_entry to allow for editing the message later
         url_button = Button('url_button', 'Enter Data Here', url=url,
@@ -188,6 +190,7 @@ def data_entry(form, url):
                 user=user, text=text, attachments=json.dumps(attachments))
 
         # Add message timestamp to data_entry queue
+        print(f'Message_ts from api_call response: {response["message_ts"]}')
         message_ts = response['message_ts']
         query = ('UPDATE data_entry_queue ' +
                 'SET message_ts = %s;')
@@ -356,13 +359,13 @@ def lookup_helper(form, key, table_names):
 def verify_ext(ext):
     """take an extension from /data_entry/<ext> and ensure it's in the
     data_entry_queue table"""
-    with conn.cursor() as cur:
+    with conn.cursor(cursor_factory=psycopg2.extras.RealDictCursor) as cur:
         query = ('DELETE FROM data_entry_queue WHERE ' +
                 'url_ext = %s RETURNING *;')
         cur.execute(query, (ext,))
-        results = cur.fetchall()
+        results = cur.fetchone()
         #Check if request has not expired
-        if len(results) > 0 and results[0][5] < datetime.now():
+        if len(results) > 0 and results['exp_date'] < datetime.now():
             results = []
         conn.commit()
 

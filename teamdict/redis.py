@@ -15,7 +15,7 @@ from flask import request
 from teamdict import app
 from teamdict.util import *
 
-def queue_task(request, req_body, job_type, **data):
+def queue_task(request, req_body, job_type, **extras):
     """
     Enqueue a job in the Redis queue.
 
@@ -25,7 +25,7 @@ def queue_task(request, req_body, job_type, **data):
         job_type (str): Describes what functions the command has access to.
 
     Kwargs:
-        data: (Optional) For extra data needed by data_entry.
+        extras: (Optional) For extra data needed by data_entry.
 
     Returns:
         A tuple containing the empty string and the integer 200 to respond to
@@ -39,7 +39,7 @@ def queue_task(request, req_body, job_type, **data):
         job_data = JobData(headers, form, req_body, job_type)
         rq_job = app.task_queue.enqueue(triage_response, job_data)
     elif job_type == 'data_entry':
-        data_entry = data['data_entry']
+        data_entry = extras['data_entry']
         job_data = JobData(headers, form, req_body, job_type,
                         data=data_entry)
         rq_job = app.task_queue.enqueue(handle_data_entry, job_data)
@@ -51,7 +51,7 @@ def queue_task(request, req_body, job_type, **data):
 
 class JobData:
     """JobData object for communicating a job's data to triage_command()"""
-    def __init__(self, headers, form, body, job_type, url='', data=[]):
+    def __init__(self, headers, form, body, job_type, url='', data={}):
         self.headers = headers
         self.form = form
         self.body = body

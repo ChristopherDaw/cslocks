@@ -113,11 +113,16 @@ def triage_response(job_data):
         send_delayed_message(message, response_url)
 
 def handle_data_entry(job_data):
-    print(f'job_data body:\n{job_data.body}')
-    data = job_data.data
+    data_entry = job_data.data
     token = app.config['ACCESS_TOKEN']
+    channel = data_entry['channel_id']
+    ts = data_entry['message_ts']
+    text = 'Thank you!'
 
-    #response = api_call('chat.update',
+    response = api_call('chat.update', token=token, channel=channel,
+            text=text, ts=ts)
+
+    print(f'Response from api_call: {response}')
 
 def handle_file_upload(csv_file, data_entry_row):
     key = ''

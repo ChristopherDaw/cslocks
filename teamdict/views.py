@@ -55,10 +55,9 @@ def data_entry(ext):
             return ("<h1>Try again</h1>", 403)
         elif len(data) > 0:
             # Extract data from database row and modify request
-            db_row = data[0]
-            table_name = db_row[1]
+            table_name = data['table_name']
             req_body = request.get_data(as_text=True)
-            queue_task(request, req_body, 'data_entry', data_entry=db_row)
+            queue_task(request, req_body, 'data_entry', data_entry=data)
 
             # Render data entry page
             the_time = datetime.now().strftime("%A, %d %b %Y %l:%M %p")
@@ -76,4 +75,3 @@ def testing():
     if request.method == 'POST':
         print(request.get_data(as_text=True))
     return ('', 200)
-
