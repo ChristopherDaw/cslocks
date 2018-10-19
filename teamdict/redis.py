@@ -33,28 +33,28 @@ def queue_task(request, req_body, job_type, **data):
     """
     headers = dict(request.headers.to_list())
     form = request.form.to_dict()
-    url = request.url_root
 
     if job_type == 'response':
         form = json.loads(form['payload'])
-        job_data = JobData(headers, form, url, req_body, job_type)
+        job_data = JobData(headers, form, req_body, job_type)
         rq_job = app.task_queue.enqueue(triage_response, job_data)
     elif job_type == 'data_entry':
         data_entry = data['data_entry']
-        job_data = JobData(headers, form, url, req_body, job_type,
+        job_data = JobData(headers, form, req_body, job_type,
                         data=data_entry)
         rq_job = app.task_queue.enqueue(handle_data_entry, job_data)
     else:
-        job_data = JobData(headers, form, url,  req_body, job_type)
+        url = request.url_root
+        job_data = JobData(headers, form, req_body, job_type, url=url)
         rq_job = app.task_queue.enqueue(triage_command, job_data)
     return ('', 200)
 
 class JobData:
     """JobData object for communicating a job's data to triage_command()"""
-    def __init__(self, headers, form, url, body, job_type, data=[]):
+    def __init__(self, headers, form, body, job_type, url='', data=[]):
         self.headers = headers
         self.form = form
-        self.url = url
         self.body = body
         self.job_type = job_type
+        self.url = url
         self.data = data

@@ -23,7 +23,6 @@ def triage_command(job_data):
     """
     form = job_data.form
     job_type = job_data.job_type
-    url = job_data.url
     response_url = form['response_url']
     slash_command = form['command']
 
@@ -54,6 +53,7 @@ def triage_command(job_data):
         elif command == 'add':
             db.add_data(form)
         elif command == 'populate':
+            url = job_data.url
             db.data_entry(form, url)
         elif command == 'delete':
             db.delete_data(form)
@@ -113,10 +113,11 @@ def triage_response(job_data):
         send_delayed_message(message, response_url)
 
 def handle_data_entry(job_data):
-    form = job_data.form
+    print(f'job_data body:\n{job_data.body}')
     data = job_data.data
+    token = app.config['ACCESS_TOKEN']
 
-    print(f'Form and data from handle_data_entry:\n{form}\n\n{data}')
+    #response = api_call('chat.update',
 
 def handle_file_upload(csv_file, data_entry_row):
     key = ''
