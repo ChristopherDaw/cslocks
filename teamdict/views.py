@@ -5,13 +5,11 @@ October 4, 2018
 
 This module defines the routes for flask endpoints.
 """
-import json
 from flask import request
 from datetime import datetime
 from teamdict import app
 from teamdict.postgres import verify_ext
 from teamdict.redis import queue_task
-from teamdict.slack import *
 
 @app.route('/')
 def homepage():
@@ -59,11 +57,8 @@ def data_entry(ext):
             # Extract data from database row and modify request
             db_row = data[0]
             table_name = db_row[1]
-            res_data = json.loads(response.get_data())
-            res_data['data_entry'] = db_row
-            response.set_data(json.dumps(res_data))
             req_body = request.get_data(as_text=True)
-            queue_task(request, req_body, 'data_entry')
+            queue_task(request, req_body, 'data_entry', data_entry=db_row)
 
             # Render data entry page
             the_time = datetime.now().strftime("%A, %d %b %Y %l:%M %p")

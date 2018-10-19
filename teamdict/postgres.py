@@ -362,7 +362,7 @@ def verify_ext(ext):
         cur.execute(query, (ext,))
         results = cur.fetchall()
         #Check if request has not expired
-        if len(results) > 0 and results[0][4] < datetime.now():
+        if len(results) > 0 and results[0][5] < datetime.now():
             results = []
         conn.commit()
 

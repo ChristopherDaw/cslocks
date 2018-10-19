@@ -96,7 +96,7 @@ def api_call(method, token=None, **data):
         token (str): (Optional) Auth token must be provided here or in kwargs.
 
     Kwargs:
-        kwargs: (Optional) Arguments required by the specified api method.
+        data: (Optional) Arguments required by the specified api method.
 
     Returns:
         JSON response from Slack
@@ -111,7 +111,7 @@ def api_call(method, token=None, **data):
 
     req = requests.post(post_url, headers=headers, data=data)
     json_response = json.loads(req.text)
-    return json.dumps(json_response)
+    return json_response
 
 class Button:
     """

@@ -114,8 +114,9 @@ def triage_response(job_data):
 
 def handle_data_entry(job_data):
     form = job_data.form
+    data = job_data.data
 
-    print(f'Form from handle_data_entry:\n{form}')
+    print(f'Form and data from handle_data_entry:\n{form}\n\n{data}')
 
 def handle_file_upload(csv_file, data_entry_row):
     key = ''
