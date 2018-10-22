@@ -30,7 +30,7 @@ with app.dbconn.cursor() as cur:
             'response_url VARCHAR, ' +
             'user_id VARCHAR, ' +
             'channel_id VARCHAR, ' +
-            'message_ts FLOAT, ' +
+            'message_ts NUMERIC(16, 6), ' +
             "exp_date TIMESTAMP NOT NULL DEFAULT now() + interval '2 minutes'" +
             ');')
     cur.execute(query)
