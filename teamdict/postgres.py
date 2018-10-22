@@ -170,13 +170,12 @@ def data_entry(form, url):
                             channel_id,))
 
         # Use api call for data_entry to allow for editing the message later
-        url_button = Button('url_button', 'Enter Data Here', url=url,
-                            style='primary')
+        done_button = Button('done', 'Done', style='primary')
         cancel_button = Button('cancel', 'Cancel')
-        buttons = [url_button.dict, cancel_button.dict]
+        buttons = [done_button.dict, cancel_button.dict]
         attachments = [{
                 'actions': buttons,
-                'text': 'Button expires in two minutes',
+                'text': f'Link expires in two minutes\n<{url}>',
                 'color': '#003F87',
                 'callback_id': url,
                 'fallback': url,
@@ -365,7 +364,7 @@ def verify_ext(ext):
         cur.execute(query, (ext,))
         results = cur.fetchone()
         #Check if request has not expired
-        if len(results) > 0 and results['exp_date'] < datetime.now():
+        if results is None or results['exp_date'] < datetime.now():
             results = []
         conn.commit()
 
