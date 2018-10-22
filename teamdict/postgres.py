@@ -173,9 +173,11 @@ def data_entry(form, url):
         done_button = Button('done', 'Done', style='primary')
         cancel_button = Button('cancel', 'Cancel')
         buttons = [done_button.dict, cancel_button.dict]
+        text = f'Link expires in two minutes\n[Click here for data entry]({url})'
         attachments = [{
+                'pretext': 'Data Entry',
                 'actions': buttons,
-                'text': f'Link expires in two minutes\n<{url}>',
+                'text': text,
                 'color': '#003F87',
                 'callback_id': url,
                 'fallback': url,
@@ -184,7 +186,6 @@ def data_entry(form, url):
         token = app.config['ACCESS_TOKEN']
         channel = form['channel_id']
         user = form['user_id']
-        text = f'Upload CSV Data Here:'
         response = api_call('chat.postEphemeral', token=token, channel=channel,
                 user=user, text=text, attachments=json.dumps(attachments))
 
