@@ -117,10 +117,8 @@ def handle_data_entry(job_data):
     token = app.config['ACCESS_TOKEN']
     channel = data_entry['channel_id']
     ts = data_entry['message_ts']
-    text = 'Thank you!'
 
-    response = api_call('chat.update', token=token, channel=channel,
-            text=text, ts=ts)
+    response = api_call('chat.delete', token=token, channel=channel, ts=ts)
 
     print(f'Response from api_call: {response}')
 
