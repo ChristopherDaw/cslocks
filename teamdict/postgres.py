@@ -160,7 +160,7 @@ def data_entry(form, url):
         user_id = form['user_id']
         channel_id = form['channel_id']
         url_ext = blake2b(f'{user_id} {datetime.now()}'.encode('utf-8'),
-                          digest_size=20).hexdigest()
+                          digest_size=15).hexdigest()
         url = f'{url}data_entry/{url_ext}'
 
         query = ('INSERT INTO data_entry_queue ' +
@@ -173,11 +173,11 @@ def data_entry(form, url):
         done_button = Button('done', 'Done', style='primary')
         cancel_button = Button('cancel', 'Cancel')
         buttons = [done_button.dict, cancel_button.dict]
-        text = f'Link expires in two minutes\n[Click here for data entry]({url})'
+        atext = f'Link expires in two minutes\n<{url}>'
         attachments = [{
                 'pretext': 'Data Entry',
                 'actions': buttons,
-                'text': text,
+                'text': atext,
                 'color': '#003F87',
                 'callback_id': url,
                 'fallback': url,
@@ -187,7 +187,7 @@ def data_entry(form, url):
         channel = form['channel_id']
         user = form['user_id']
         response = api_call('chat.postEphemeral', token=token, channel=channel,
-                user=user, text=text, attachments=json.dumps(attachments))
+                user=user, attachments=json.dumps(attachments))
 
         # Add message timestamp to data_entry queue
         print(f'Message_ts from api_call response: {response["message_ts"]}')
