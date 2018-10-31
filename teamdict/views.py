@@ -5,7 +5,7 @@ October 4, 2018
 
 This module defines the routes for flask endpoints.
 """
-from flask import request
+from flask import request, render_template, url_for, redirect
 from datetime import datetime
 from teamdict import app
 from teamdict.postgres import verify_ext
@@ -13,14 +13,7 @@ from teamdict.redis import queue_task
 
 @app.route('/')
 def homepage():
-    the_time = datetime.now().strftime("%A, %d %b %Y %l:%M %p")
-
-    return """
-    <h1>Hello heroku</h1>
-    <p>It is currently {time}.</p>
-
-    <img src="http://loremflickr.com/600/400/bird">
-    """.format(time=the_time)
+    return render_template('index.html')
 
 @app.route('/slack/lookup', methods=['POST', 'GET'])
 def lookup():
@@ -28,7 +21,8 @@ def lookup():
         req_body = request.get_data(as_text=True)
         return queue_task(request, req_body, 'lookup')
 
-    return "This is from flask for slack"
+    else:
+        return redirect(url_for('homepage'))
 
 @app.route('/slack/modify', methods=['POST', 'GET'])
 def modify():
@@ -36,7 +30,8 @@ def modify():
         req_body = request.get_data(as_text=True)
         return queue_task(request, req_body, 'modify')
 
-    return "This is from flask for slack"
+    else:
+        return redirect(url_for('homepage'))
 
 @app.route('/slack/response', methods=['POST', 'GET'])
 def response():
@@ -44,7 +39,8 @@ def response():
         req_body = request.get_data(as_text=True)
         return queue_task(request, req_body, 'response')
 
-    return "This is from flask for slack"
+    else:
+        return redirect(url_for('homepage'))
 
 @app.route('/data_entry/<ext>', methods=['POST', 'GET'])
 def data_entry(ext):
@@ -74,4 +70,6 @@ def data_entry(ext):
 def testing():
     if request.method == 'POST':
         print(request.get_data(as_text=True))
-    return ('', 200)
+
+    else:
+        return redirect(url_for('homepage'))

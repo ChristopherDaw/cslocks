@@ -1,0 +1,87 @@
+<!doctype html>
+<html lang="en">
+  <head>
+        <!-- Required meta tags -->
+    <meta charset="utf-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1, shrink-to-fit=no">
+
+    <!-- Bootstrap CSS -->
+    <link rel="stylesheet" href="https://stackpath.bootstrapcdn.com/bootstrap/4.1.3/css/bootstrap.min.css" integrity="sha384-MCw98/SFnGE8fJT3GXwEOngsV7Zt27NXFoaoApmYm81iuXoPkFOJwJ8ERdknLPMO" crossorigin="anonymous">
+    <link href="https://fonts.googleapis.com/css?family=Rubik" rel="stylesheet">
+    <link rel="stylesheet" href="{{ url_for('static', filename='style.css') }}">
+
+    <title>Team Dict</title>
+  </head>
+  <body>
+    <div class="centered">
+      <div class="header">
+        <h1>slack team dictionary</h1>
+      </div>
+      <div class="col-5">
+        <div class="projinfo">
+          <h3>team dict</h3>
+          <img src="{{ url_for('static', filename='book.svg') }}" height="150" width="150">
+        </div>
+      </div>
+      <div class="col-6">
+        <div class="installation">
+          <h3>quick installation</h3>
+          <a href="https://google.com">Imagine this is a button</a>
+          <hr>
+          <h3>manual installation</h3>
+          <ol>
+            <li>Add a the new Slash Commands by going to this url:<br>
+              <a class="tab" href='https://my.slack.com/apps/build/custom-integration'><code>https://my.slack.com/apps/build/custom-integration</code></a><br>
+              and selecting 'Slash Commands'</li>
+            <li>Follow these steps for the <code>/dbmod</code> command
+            <ul>
+              <li>i. Enter the command <code>/dbmod</code> into the text field</li>
+              <li>ii. In the URL field, enter:<br>
+              <code class="tab">{{ url_for('modify', _external=True) }}</code></li>
+              <li>iii. In the Customize Name field, enter "Team Dict"</li>
+              <li>iv. <i>(Optional)</i> Check the "Show this command in the autocomplete list" box:<br>
+                <b>Description</b>: "Modify a dictionary table"<br>
+                <b>Usage Hint</b>: "&lt;command&gt; &lt;table&gt; [&lt;argument&gt;]"</li>
+              <li>v. Click <b class="savegreen">Save Integration</b></li>
+            </ul>
+            <li>Repeat <b>Step 1.</b> for the <code>/lookup</code> command</li>
+            <li>Follow these steps for the <code>/lookup</code> command
+            <ul>
+              <li>i. Enter the command <code>/lookup</code> into the text field</li>
+              <li>ii. In the URL field, enter:<br>
+              <code class="tab">{{ url_for('lookup', _external=True) }}</code></li>
+              <li>iii. In the Customize Name field, enter "Team Dict"</li>
+              <li>iv. <i>(Optional)</i> Check the "Show this command in the autocomplete list" box:<br>
+                <b>Description</b>: "Lookup data from a dictionary table"<br>
+                <b>Usage Hint</b>: "&lt;key&gt; [&lt;table&gt;]"</li>
+              <li>v. Click <b class="savegreen">Save Integration</b></li>
+            </ul>
+          </ol>
+          <hr>
+          <h3>available commands</h3>
+          <ul>
+            <li><code>/lookup ...</code></li>
+            <ul>
+              <li><code>&lt;key&gt; [table]</code></li>
+              <li><code>show tables</code></li>
+            </ul>
+            <li><code>/dbmod ...</code></li>
+            <ul>
+              <li><code>populate &lt;table&gt;</code></li>
+              <li><code>create &lt;table&gt;</code></li>
+              <li><code>drop &lt;table&gt;</code></li>
+              <li><code>add &lt;table&gt; &lt;key&gt; &lt;value&gt;</code></li>
+              <li><code>delete &lt;table&gt; &lt;key&gt;</code></li>
+            </ul>
+          </ul>
+        </div>
+      </div>
+    </div>
+
+    <!-- Optional JavaScript -->
+    <!-- jQuery first, then Popper.js, then Bootstrap JS -->
+    <script src="https://code.jquery.com/jquery-3.3.1.slim.min.js" integrity="sha384-q8i/X+965DzO0rT7abK41JStQIAqVgRVzpbzo5smXKp4YfRvH+8abtTE1Pi6jizo" crossorigin="anonymous"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/popper.js/1.14.3/umd/popper.min.js" integrity="sha384-ZMP7rVo3mIykV+2+9J3UJ46jBk0WLaUAdn689aCwoqbBJiSnjAK/l8WvCWPIPm49" crossorigin="anonymous"></script>
+    <script src="https://stackpath.bootstrapcdn.com/bootstrap/4.1.3/js/bootstrap.min.js" integrity="sha384-ChfqqxuZUCnJSK3+MXmPNIyE6ZbWh2IMqE241rYiqJxyMiZ6OW/JmZQ5stwEULTy" crossorigin="anonymous"></script>
+  </body>
+</html>

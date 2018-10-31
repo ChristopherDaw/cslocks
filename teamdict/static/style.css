@@ -1,0 +1,108 @@
+/*
+ * Globals
+ */
+/* Custom default button */
+.btn-default,
+.btn-default:hover,
+.btn-default:focus {
+  color: #000;
+  text-shadow: none; /* Prevent inheritance from `body` */
+  background-color: #fff;
+  border: 1px solid #000;
+}
+
+a {
+  color: #1976D2;
+}
+
+/*
+ * Base structure
+ */
+
+html,
+body {
+  font-family: 'Rubik', sans-serif;
+  height: 100%;
+  background-color: #fff;
+}
+
+.header {
+    padding: 15px;
+    text-align: center;
+    vertical-align: middle;
+}
+
+body {
+  color: #000;
+  text-align: left;
+}
+
+.centered {
+    /* padding: 15px; */
+    width: 80%;
+    margin-left: auto;
+    margin-right: auto;
+    /* display: inline-block; */
+}
+
+.projinfo {
+  text-align: right;
+  padding-right: 30px;
+}
+
+.installation {
+  text-align: left;
+  padding-left: 30px;
+}
+
+.tab {
+  padding-left: 2em;
+}
+
+.savegreen {
+  color: #057f4e;
+}
+
+ul {
+  list-style-type: none;
+  padding-left: 25px;
+}
+
+ol {
+  margin-block-end: 0;
+}
+
+ol > li {
+  padding-bottom: 1em;
+}
+
+code {
+  color: #1976D2;
+}
+
+[class*="col-"] {
+    position: relative;
+    float: left;
+    padding: 15px;
+}
+
+/* For desktop: */
+.col-1 {width: 8.33%;}
+.col-2 {width: 16.66%;}
+.col-3 {width: 25%;}
+.col-4 {width: 33.33%;}
+.col-5 {width: 41.66%;}
+.col-6 {width: 50%;}
+.col-7 {width: 58.33%;}
+.col-8 {width: 66.66%;}
+.col-9 {width: 75%;}
+.col-10 {width: 83.33%;}
+.col-11 {width: 91.66%;}
+.col-12 {width: 100%;}
+
+@media only screen and (max-width: 768px) {
+    /* For mobile phones: */
+    [class*="col-"] {
+        width: 100%;
+    }
+}
