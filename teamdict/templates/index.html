@@ -21,18 +21,17 @@
         <div class="projinfo">
           <h3>team dict</h3>
           <img src="{{ url_for('static', filename='book.svg') }}" height="150" width="150">
+          <h3>quick installation</h3>
+          <a href="{{ url_for('homepage') }}">Imagine this is a button to add the app to slack</a>
         </div>
       </div>
       <div class="col-6">
         <div class="installation">
-          <h3>quick installation</h3>
-          <a href="https://google.com">Imagine this is a button</a>
-          <hr>
           <h3>manual installation</h3>
           <ol>
-            <li>Add a the new Slash Commands by going to this url:<br>
-              <a class="tab" href='https://my.slack.com/apps/build/custom-integration'><code>https://my.slack.com/apps/build/custom-integration</code></a><br>
-              and selecting 'Slash Commands'</li>
+            <li>Browse to this url:<br>
+              <a class="tab" href='https://my.slack.com/apps/build/custom-integration'><code>https://my.slack.com/apps/build/custom-integration</code></a><br></li>
+            <li>Select 'Slash Commands'</li>
             <li>Follow these steps for the <code>/dbmod</code> command
             <ul>
               <li>i. Enter the command <code>/dbmod</code> into the text field</li>
@@ -40,11 +39,11 @@
               <code class="tab">{{ url_for('modify', _external=True) }}</code></li>
               <li>iii. In the Customize Name field, enter "Team Dict"</li>
               <li>iv. <i>(Optional)</i> Check the "Show this command in the autocomplete list" box:<br>
-                <b>Description</b>: "Modify a dictionary table"<br>
-                <b>Usage Hint</b>: "&lt;command&gt; &lt;table&gt; [&lt;argument&gt;]"</li>
+                <b class="tab">Description</b>: "Modify a dictionary table"<br>
+                <b class="tab">Usage Hint</b>: "&lt;command&gt; &lt;table&gt; [&lt;argument&gt;]"</li>
               <li>v. Click <b class="savegreen">Save Integration</b></li>
             </ul>
-            <li>Repeat <b>Step 1.</b> for the <code>/lookup</code> command</li>
+            <li>Repeat <b>Steps 1 and 2</b> for the <code>/lookup</code> command</li>
             <li>Follow these steps for the <code>/lookup</code> command
             <ul>
               <li>i. Enter the command <code>/lookup</code> into the text field</li>
@@ -52,8 +51,8 @@
               <code class="tab">{{ url_for('lookup', _external=True) }}</code></li>
               <li>iii. In the Customize Name field, enter "Team Dict"</li>
               <li>iv. <i>(Optional)</i> Check the "Show this command in the autocomplete list" box:<br>
-                <b>Description</b>: "Lookup data from a dictionary table"<br>
-                <b>Usage Hint</b>: "&lt;key&gt; [&lt;table&gt;]"</li>
+                <b class="tab">Description</b>: "Lookup data from a dictionary table"<br>
+                <b class="tab">Usage Hint</b>: "&lt;key&gt; [&lt;table&gt;]"</li>
               <li>v. Click <b class="savegreen">Save Integration</b></li>
             </ul>
           </ol>
