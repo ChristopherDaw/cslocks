@@ -49,7 +49,8 @@ def response():
 def data_entry(ext):
     # When a user navigates to the URL for data entry
     if request.method == 'GET':
-        data = queue_util(verify_ext, 'verification', ext=ext)
+        #TODO: Make this in the redis queue
+        data = verify_ext(ext)
         if len(data) == 0:
             # Render failure page
             return ("<h1>Try again</h1>", 403)
