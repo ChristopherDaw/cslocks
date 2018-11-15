@@ -13,7 +13,7 @@ __module__ = 'teamdict'
 
 def set_app_config():
     app_name = 'teamdict'
-    upload_folder = '/uploads'
+    upload_folder = '/tmp'
     provider = get_provider(app_name)
 
     return  {
@@ -28,7 +28,7 @@ def set_app_config():
         'DATABASE_URL': os.environ.get('DATABASE_URL'),
         'ACCESS_TOKEN': os.environ.get('ACCESS_TOKEN'),
         'ALLOWED_EXTENSIONS': set(['txt', 'csv']),
-        'UPLOAD_FOLDER': provider.module_path + upload_folder,
+        'UPLOAD_FOLDER': upload_folder,
     }
 
 # Initialize flask app
