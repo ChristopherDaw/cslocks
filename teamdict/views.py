@@ -55,6 +55,7 @@ def data_entry(ext):
             return ("<h1>Try again</h1>", 403)
         elif len(data) > 0:
             # Extract data from database row
+            print(data)
             table_name = data['table_name'].split('_')[1]
             req_body = request.get_data(as_text=True)
 
