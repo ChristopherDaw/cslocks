@@ -129,11 +129,7 @@ def handle_file_upload(**kwargs):
         return {}
 
     ext = kwargs['ext']
-    with app.dbconn.cursor(cursor_factory=psycopg2.extras.RealDictCursor) as cur:
-        query = ('DELETE FROM data_entry_queue WHERE ' +
-                'url_ext = %s RETURNING *;')
-        cur.execute(query, (ext,))
-        dbrow = cur.fetchone()
+    dbrow = db.fetch_data_entry_row(ext)
 
     key = ''
     value = ''
