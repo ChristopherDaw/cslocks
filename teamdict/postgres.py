@@ -126,9 +126,12 @@ def add_data(form):
         None
     """
     with conn.cursor() as cur:
-        short_name, table_name = get_table_names(form, 1)
-        if table_name is None:
-            return
+        if 'table_name' in form:
+            short_name, table_name = add_short_name(form['table_name'])
+        if not 'table_name' in form:
+            short_name, table_name = get_table_names(form, 1)
+            if table_name is None:
+                return
 
         text = form['text'].split()
         key = text[2]
@@ -360,7 +363,7 @@ def verify_ext(ext):
     """take an extension from /data_entry/<ext> and ensure it's in the
     data_entry_queue table"""
     with conn.cursor(cursor_factory=psycopg2.extras.RealDictCursor) as cur:
-        query = ('DELETE FROM data_entry_queue WHERE ' +
+        query = ('SELECT FROM data_entry_queue WHERE ' +
                 'url_ext = %s RETURNING *;')
         cur.execute(query, (ext,))
         results = cur.fetchone()

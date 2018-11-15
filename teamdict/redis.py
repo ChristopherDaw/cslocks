@@ -38,16 +38,33 @@ def queue_task(request, req_body, job_type, **extras):
         form = json.loads(form['payload'])
         job_data = JobData(headers, form, req_body, job_type)
         rq_job = app.task_queue.enqueue(triage_response, job_data)
-    elif job_type == 'data_entry':
-        data_entry = extras['data_entry']
-        job_data = JobData(headers, form, req_body, job_type,
-                        data=data_entry)
-        rq_job = app.task_queue.enqueue(handle_data_entry, job_data)
     else:
         url = request.url_root
         job_data = JobData(headers, form, req_body, job_type, url=url)
         rq_job = app.task_queue.enqueue(triage_command, job_data)
     return ('', 200)
+
+def queue_util(job_func, type, **extras):
+    """
+    Enqueue a utility job in the Redis queue.
+
+    Args:
+        job_func (function): The function to be called.
+
+    Kwargs:
+        extras: (Optional) Arguments for the job_func function.
+    """
+    rq_job = app.task_queue.enqueue(job_func, kwargs=extras)
+    rq_job.meta['type'] = type
+    rq_job.save_meta()
+    response_json = {
+        'status': 'success',
+        'data': {
+            'task_id': rq_job.get_id()
+        }
+    }
+    return response_json
+
 
 class JobData:
     """JobData object for communicating a job's data to triage_command()"""

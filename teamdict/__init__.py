@@ -4,6 +4,7 @@ import sys
 import logging
 import redis
 import psycopg2
+from pkg_resources import get_provider
 from flask import Flask
 from worker import conn
 
@@ -12,16 +13,22 @@ __module__ = 'teamdict'
 
 def set_app_config():
     app_name = 'teamdict'
+    upload_folder = '/uploads'
+    provider = get_provider(app_name)
 
     return  {
         'name': app_name,
         'full_name': 'Slack Team Dictionary',
         'version': '0.1',
         'github_url': 'https://github.com/ChristopherDaw/slack-teamdict',
+        'package_path': provider.module_path,
         'SIGNING_SECRET': os.environ.get('SIGNING_SECRET'),
+        'SESSION_TYPE': 'redis',
         'REDIS_URL': os.environ.get('REDIS_URL','redis://'),
         'DATABASE_URL': os.environ.get('DATABASE_URL'),
         'ACCESS_TOKEN': os.environ.get('ACCESS_TOKEN'),
+        'ALLOWED_EXTENSIONS': set(['txt', 'csv']),
+        'UPLOAD_FOLDER': provider.module_path + upload_folder,
     }
 
 # Initialize flask app

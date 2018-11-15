@@ -16,17 +16,35 @@
     <div class="centered">
       <div class="header">
         <h1>slack team dictionary</h1>
+        <hr>
       </div>
       <div class="col-5">
         <div class="projinfo">
           <h3>team dict</h3>
           <img src="{{ url_for('static', filename='book.svg') }}" height="150" width="150">
-          <h3>quick installation</h3>
-          <a href="{{ url_for('homepage') }}">Imagine this is a button to add the app to slack</a>
+          <h3>available commands</h3>
+          <ul>
+            <li><code>/lookup ...</code></li>
+            <ul>
+              <li><code>&lt;key&gt; [table]</code></li>
+              <li><code>show tables</code></li>
+            </ul>
+            <li><code>/dbmod ...</code></li>
+            <ul>
+              <li><code>populate &lt;table&gt;</code></li>
+              <li><code>create &lt;table&gt;</code></li>
+              <li><code>drop &lt;table&gt;</code></li>
+              <li><code>add &lt;table&gt; &lt;key&gt; &lt;value&gt;</code></li>
+              <li><code>delete &lt;table&gt; &lt;key&gt;</code></li>
+            </ul>
+          </ul>
         </div>
       </div>
       <div class="col-6">
         <div class="installation">
+          <h3>quick installation</h3>
+          <a href="{{ url_for('homepage') }}">Imagine this is a button to add the app to slack</a>
+          <hr>
           <h3>manual installation</h3>
           <ol>
             <li>Browse to this url:<br>
@@ -56,23 +74,6 @@
               <li>v. Click <b class="savegreen">Save Integration</b></li>
             </ul>
           </ol>
-          <hr>
-          <h3>available commands</h3>
-          <ul>
-            <li><code>/lookup ...</code></li>
-            <ul>
-              <li><code>&lt;key&gt; [table]</code></li>
-              <li><code>show tables</code></li>
-            </ul>
-            <li><code>/dbmod ...</code></li>
-            <ul>
-              <li><code>populate &lt;table&gt;</code></li>
-              <li><code>create &lt;table&gt;</code></li>
-              <li><code>drop &lt;table&gt;</code></li>
-              <li><code>add &lt;table&gt; &lt;key&gt; &lt;value&gt;</code></li>
-              <li><code>delete &lt;table&gt; &lt;key&gt;</code></li>
-            </ul>
-          </ul>
         </div>
       </div>
     </div>

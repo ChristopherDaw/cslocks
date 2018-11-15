@@ -7,7 +7,7 @@
 .btn-default:focus {
   color: #000;
   text-shadow: none; /* Prevent inheritance from `body` */
-  background-color: #fff;
+  background-color: #FAFAFA;
   border: 1px solid #000;
 }
 
@@ -23,7 +23,7 @@ html,
 body {
   font-family: 'Rubik', sans-serif;
   height: 100%;
-  background-color: #fff;
+  background-color: #FAFAFA;
 }
 
 .header {
@@ -43,6 +43,10 @@ body {
     margin-right: auto;
 }
 
+.spacer {
+  padding-top: 2rem;
+}
+
 .projinfo {
   text-align: right;
   padding-right: 30px;
@@ -51,6 +55,52 @@ body {
 .installation {
   text-align: left;
   padding-left: 30px;
+}
+
+.flexbox {
+  display: flex;
+  flex-flow: column;
+  height: 100%
+}
+
+.box .header {
+  flex: 0 1 auto;
+}
+
+.dropwrap {
+  flex: 1 1 auto;
+  height: 100%;
+  width: 80%;
+  height: auto;
+  padding-top: 2rem;
+  margin-left: auto;
+  margin-right: auto;
+}
+
+.dropzone {
+  flex: 1 2 auto;
+  width: 60%;
+  margin: inherit;
+  padding: 2rem;
+  text-align: center;
+  border-radius: 20px;
+  border: 2px dashed #AED6F1;
+  background-color: #FFF;
+}
+
+.btns, .result {
+  flex: 2 1 auto;
+  display: flex;
+  justify-content: center;
+}
+
+.btns button {
+  margin: 2rem;
+  padding: 1rem;
+}
+
+.dz-error-message, .dz-success-mark, .dz-error-mark {
+  display: none;
 }
 
 .tab {
@@ -108,5 +158,9 @@ code {
     .projinfo, .installation {
       text-align: left;
       padding: 0;
+    }
+
+    .dropzone {
+      width: 100%;
     }
 }

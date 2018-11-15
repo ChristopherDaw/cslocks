@@ -1,0 +1,46 @@
+<!doctype html>
+<html lang="en">
+  <head>
+        <!-- Required meta tags -->
+    <meta charset="utf-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1, shrink-to-fit=no">
+
+    <!-- Bootstrap CSS -->
+    <link rel="stylesheet" href="https://stackpath.bootstrapcdn.com/bootstrap/4.1.3/css/bootstrap.min.css" integrity="sha384-MCw98/SFnGE8fJT3GXwEOngsV7Zt27NXFoaoApmYm81iuXoPkFOJwJ8ERdknLPMO" crossorigin="anonymous">
+    <link href="https://fonts.googleapis.com/css?family=Rubik" rel="stylesheet">
+    <link rel="stylesheet" href="{{ url_for('static', filename='style.css') }}">
+
+    <script src="//code.jquery.com/jquery-3.2.1.min.js"></script>
+    <script type="text/javascript" src="{{ url_for('static', filename='dropzone.js') }}"></script>
+    <script type="text/javascript" src="{{ url_for('static', filename='dataentry.js') }}"></script>
+
+    <title>Team Dict</title>
+  </head>
+  <body>
+    <div class="flexbox">
+      <div class="centered">
+        <div class="header">
+          <h1>slack team dictionary</h1>
+          <hr>
+          <h3 class="spacer">Populate {{ table_name }}</h3>
+        </div>
+      </div>
+      <div class="dropwrap">
+        <form action="/data_entry/{{ url_ext }}" id="dzstyle" class="dropzone">
+          <p>Click anywhere to choose a file</p>
+          <p>--or--</p>
+          <!--
+          <p class="jshidden">Since you aren't using js</p>
+          <input class="jshidden" type="file" accept="text/csv, text/plain"</input>
+          -->
+        </form>
+
+        <div class="btns">
+          <button type="submit" class="btn btn-outline-danger btn-lg" name="cancel">Cancel</button>
+          <button type="submit" class="btn btn-primary btn-lg" name="continue">Continue &gt;</button>
+        </div>
+        <div class="result">
+        </div>
+      </div>
+    </div>
+</html>
