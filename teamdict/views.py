@@ -49,8 +49,6 @@ def response():
 def data_entry(ext):
     # When a user navigates to the URL for data entry
     if request.method == 'GET':
-        table_name = 'Testing Grounds'
-        return render_template('dataentry.html', table_name=table_name, url_ext=ext)
         data = queue_util(verify_ext, ext=ext)
         if len(data) == 0:
             # Render failure page
@@ -59,9 +57,6 @@ def data_entry(ext):
             # Extract data from database row
             table_name = data['table_name'].split('_')[1]
             req_body = request.get_data(as_text=True)
-
-            # Queue data entry task
-            # queue_task(request, req_body, 'data_entry', data_entry=data)
 
             # Render data entry page
             return render_template('dataentry.html', table_name=table_name, url_ext=ext)
