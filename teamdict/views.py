@@ -75,7 +75,9 @@ def data_entry(ext):
 
             if file and allowed_file(file.filename):
                 filename = secure_filename(file.filename)
+                print(f'saving {filename} to {os.path.join(app.config['UPLOAD_FOLDER'], ext+'_'+filename)}')
                 file.save(os.path.join(app.config['UPLOAD_FOLDER'], ext + '_' + filename))
+                print(f'os.listdir(upload_folder):\n{os.listdir(app.config['UPLOAD_FOLDER'])}')
                 return('', 200)
 
         # If user presses a nav button 'Continue' or 'Cancel'
