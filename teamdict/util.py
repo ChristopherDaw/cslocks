@@ -129,7 +129,9 @@ def handle_file_upload(**kwargs):
         return {}
 
     ext = kwargs['ext']
+    print(f'ext at top of handle_file_upload: {ext}')
     dbrow = db.fetch_data_entry_row(ext)
+    print(f'dbrow fetched at top of handle_file_upload:\n{dbrow}')
 
     key = ''
     value = ''
@@ -139,17 +141,20 @@ def handle_file_upload(**kwargs):
     key_value_dict = {}
     uploads = app.config['UPLOAD_FOLDER']
     for filename in os.listdir(uploads):
+        print(f'filename found in uploads folder: {filename}')
         if filename.split('_')[0] == ext:
             with open(os.path.join(uploads, filename), mode='r') as user_data:
                 for row in user_data:
                     data = row.rstrip('\n').split(',')
                     if len(data) < 2:
+                        print(f'data formatted wrong: {data}')
                         #Improper formatting for this key-value pair
                         continue
                     key = data[0]
                     value = ' '.join(data[1:])
                     key_value_dict[key] = value
                     form['text'] = f'dbmod add table {key} {value}'
+                    print(f'running db.add_data(form) with this form:\n{form}')
                     db.add_data(form)
 
             os.remove(os.path.join(uploads, filename))
