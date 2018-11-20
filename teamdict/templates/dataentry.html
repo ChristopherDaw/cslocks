@@ -11,7 +11,7 @@
     <link rel="stylesheet" href="{{ url_for('static', filename='style.css') }}">
 
     <script src="//code.jquery.com/jquery-3.2.1.min.js"></script>
-    <script type="text/javascript" src="{{ url_for('static', filename='dropzone.js') }}"></script>
+    <!--<script type="text/javascript" src="{{ url_for('static', filename='dropzone.js') }}"></script>-->
     <script type="text/javascript" src="{{ url_for('static', filename='dataentry.js') }}"></script>
 
     <title>Team Dict</title>
@@ -26,18 +26,24 @@
         </div>
       </div>
       <div class="dropwrap">
+        <div class="dropzone" id="dropzone">
+          <input type="file" id="files" name="files[]" multiple/><br>
+          <output id="list"></output>
+        </div>
+        <!--
         <form action="/data_entry/{{ url_ext }}" id="dzstyle" class="dropzone">
           <p>Click anywhere to choose a file</p>
-          <p>--or--</p>
-          <!--
+          <p>-or-</p>
+
           <p class="jshidden">Since you aren't using js</p>
           <input class="jshidden" type="file" accept="text/csv, text/plain"</input>
-          -->
+
         </form>
+          -->
 
         <div class="btns">
-          <button type="submit" class="btn btn-outline-danger btn-lg" name="cancel">Cancel</button>
-          <button type="submit" class="btn btn-primary btn-lg" name="continue">Continue &gt;</button>
+          <button id="nav" type="submit" class="btn btn-outline-danger btn-lg" name="cancel">Cancel</button>
+          <button id="nav" type="submit" class="btn btn-primary btn-lg" name="continue">Continue &gt;</button>
         </div>
         <div class="result">
         </div>

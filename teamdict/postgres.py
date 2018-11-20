@@ -201,6 +201,25 @@ def data_entry(form, url):
 
         conn.commit()
 
+def data_entry_helper(form):
+    """
+    A more simple add_data() that only takes the table name, key, and value
+    from handle_file_upload.
+    """
+    with conn.cursor() as cur:
+        table_name = form['table_name']
+        key = form['key']
+        value = form['value']
+        query = ('INSERT INTO %s (key, value) ' +
+                'VALUES (%s, %s);')
+        try:
+            cur.execute(query, (as_is(table_name), key, value,))
+        except psycopg2.IntegrityError:
+            conn.rollback()
+        else:
+            conn.commit()
+
+
 def delete_data(form):
     """
     Delete a row from the specified table where the key matches the given key.

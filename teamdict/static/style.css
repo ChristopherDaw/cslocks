@@ -75,6 +75,7 @@ body {
   padding-top: 2rem;
   margin-left: auto;
   margin-right: auto;
+  justify-content: center;
 }
 
 .dropzone {
@@ -86,6 +87,10 @@ body {
   border-radius: 20px;
   border: 2px dashed #AED6F1;
   background-color: #FFF;
+}
+
+.dropzone #list {
+  text-align: left;
 }
 
 .btns, .result {

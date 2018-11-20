@@ -124,24 +124,42 @@ def handle_data_entry(job_data):
 
     print(f'Response from api_call: {response}')
 
-def handle_file_upload(**kwargs):
+def handle_file_result(**kwargs):
     if 'ext' not in kwargs:
-        return {}
+        return
 
     ext = kwargs['ext']
-    print(f'ext at top of handle_file_upload: {ext}')
     dbrow = db.fetch_data_entry_row(ext)
-    print(f'dbrow fetched at top of handle_file_upload:\n{dbrow}')
 
     key = ''
     value = ''
     form = {}
     form['response_url'] = dbrow['response_url']
     form['table_name'] = dbrow['table_name']
-    key_value_dict = {}
+    for row in kwargs['data'].split('\n'):
+        data = row.split(',')
+        if len(data) < 2:
+            #print(f'data formatted wrong: {data}')
+            #Improper formatting for this key-value pair
+            continue
+        form['key'] = data[0]
+        form['value'] = ' '.join(data[1:])
+        db.data_entry_helper(form)
+
+def handle_file_upload(**kwargs):
+    if 'ext' not in kwargs:
+        return {}
+
+    ext = kwargs['ext']
+    dbrow = db.fetch_data_entry_row(ext)
+
+    key = ''
+    value = ''
+    form = {}
+    form['response_url'] = dbrow['response_url']
+    form['table_name'] = dbrow['table_name']
     uploads = app.config['UPLOAD_FOLDER']
     for filename in os.listdir(uploads):
-        print(f'filename found in uploads folder: {filename}')
         if filename.split('_')[0] == ext:
             with open(os.path.join(uploads, filename), mode='r') as user_data:
                 for row in user_data:
@@ -150,12 +168,9 @@ def handle_file_upload(**kwargs):
                         print(f'data formatted wrong: {data}')
                         #Improper formatting for this key-value pair
                         continue
-                    key = data[0]
-                    value = ' '.join(data[1:])
-                    key_value_dict[key] = value
-                    form['text'] = f'dbmod add table {key} {value}'
-                    print(f'running db.add_data(form) with this form:\n{form}')
-                    db.add_data(form)
+                    form['key'] = data[0]
+                    form['value'] = ' '.join(data[1:])
+                    db.data_entry_helper(form)
 
             os.remove(os.path.join(uploads, filename))
 

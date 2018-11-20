@@ -12,7 +12,7 @@ from datetime import datetime
 from teamdict import app
 from teamdict.postgres import verify_ext
 from teamdict.redis import queue_task, queue_util
-from teamdict.util import handle_upload_cancellation, handle_file_upload, allowed_file
+from teamdict.util import handle_upload_cancellation, handle_file_upload, allowed_file, handle_file_result
 
 @app.route('/')
 def homepage():
@@ -83,6 +83,7 @@ def data_entry(ext):
         # If user presses a nav button 'Continue' or 'Cancel'
         else:
             form = request.form.to_dict()
+
             if 'navigation' in form:
                 navigation = form['navigation']
                 if navigation == 'continue':
@@ -93,6 +94,12 @@ def data_entry(ext):
                     # Handle cancellation of file upload
                     response_json = queue_util(handle_upload_cancellation, 'cancel', ext=ext)
                     return jsonify(response_json), 202
+
+            # FileReader result from csv file
+            if 'result' in form:
+                response_json = queue_util(handle_file_result, 'upload', data=form['result'], ext=ext)
+                return jsonify(response_json), 202
+
             # Ajax request for the status of the Redis task
             elif 'task_id' in form:
                 task_id = form['task_id']
