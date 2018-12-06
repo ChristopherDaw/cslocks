@@ -86,17 +86,14 @@ def data_entry(ext):
 
             if 'navigation' in form:
                 navigation = form['navigation']
-                if navigation == 'continue':
-                    # Handle file(s) that have been uploaded
-                    response_json = queue_util(handle_file_upload, 'continue', ext=ext)
-                    return jsonify(response_json), 202
-                elif navigation == 'cancel':
+                if navigation == 'cancel':
                     # Handle cancellation of file upload
                     response_json = queue_util(handle_upload_cancellation, 'cancel', ext=ext)
                     return jsonify(response_json), 202
 
             # FileReader result from csv file
             if 'result' in form:
+                print(f'data: {form["result"]}')
                 response_json = queue_util(handle_file_result, 'upload', data=form['result'], ext=ext)
                 return jsonify(response_json), 202
 
@@ -113,7 +110,11 @@ def data_entry(ext):
                         }
                     }
                     if rq_task.get_status() == 'finished':
-                        if rq_task.meta['type'] == 'continue':
+                        print(rq_task.meta['type'])
+                        if rq_task.meta['type'] == 'upload':
+                            # Remove data_entry_queue entry
+                            queue_util(handle_upload_cancellation, 'cancel', ext=ext)
+
                             response_json['data']['redirect'] = url_for('success')
                         elif rq_task.meta['type'] == 'cancel':
                             response_json['data']['redirect'] = url_for('homepage')

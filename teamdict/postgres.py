@@ -396,8 +396,8 @@ def fetch_data_entry_row(ext):
     """take an extension from /data_entry/<ext> and ensure it's in the
     data_entry_queue table"""
     with conn.cursor(cursor_factory=psycopg2.extras.RealDictCursor) as cur:
-        query = ('DELETE FROM data_entry_queue WHERE ' +
-                'url_ext = %s RETURNING *;')
+        query = ('SELECT * FROM data_entry_queue WHERE ' +
+                'url_ext = %s')
         cur.execute(query, (ext,))
         results = cur.fetchone()
         #Check if request has not expired

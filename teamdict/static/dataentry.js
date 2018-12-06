@@ -6,6 +6,7 @@ $( document ).ready(() => {
   }
 
   var ALLOWED_TYPES = ['text/plain', 'text/csv'];
+  var acceptedFiles = [];
   function handleFileSelect(e) {
     var files = e.target.files; //FileList object
     fileSelectHelper(files);
@@ -30,35 +31,48 @@ $( document ).ready(() => {
     $('#files')[0].disabled = true;
 
     var output = [];
-    for (var i = 0, f; f = files[i]; i++) {
+    var f;
+    for (var i = 0; i < files.length; i++) {
+      f = files[i];
       if (ALLOWED_TYPES.includes(f.type)) {
+        acceptedFiles.push(f);
         output.push('<li><strong>', escape(f.name), '</strong> (', f.type || 'n/a', ') - ',
                     f.size, ' bytes, last modified: ',
                     f.lastModifiedDate ? f.lastModifiedDate.toLocaleDateString() : 'n/a',
                     '</li>');
-
-        var reader = new FileReader();
-        reader.onload = function(e) {
-          console.log(reader.result);
-          $.ajax({
-            url: window.location.pathname,
-            data: { result: reader.result },
-            method: 'POST'
-          })
-          .done((res) => {
-            getStatus(res.data.task_id);
-          })
-          .fail((err) => {
-            console.log(err);
-          });
-        }
-
-        reader.readAsText(f);
-
-
       }
     }
     document.getElementById('list').innerHTML = '<ul>' + output.join('') + '</ul>';
+    disableButtons(false);
+  }
+
+  function readMultipleFiles(files) {
+    function readFile(index){
+      if (index >= files.length) return "";
+
+      var reader = new FileReader();
+      var file = files[index];
+      reader.onload = function(e) {
+        console.log("data: " + e.target.result);
+
+        $.ajax({
+          url: window.location.pathname,
+          data: { result: e.target.result },
+          method: 'POST'
+        })
+        .done((res) => {
+          getStatus(res.data.task_id, files.length);
+        })
+        .fail((err) => {
+          console.log(err);
+        });
+
+        readFile(index + 1);
+      }
+
+      reader.readAsText(file);
+    }
+    readFile(0);
   }
 
   function handleClick(e) {
@@ -77,22 +91,37 @@ $( document ).ready(() => {
 
   /* Ajax asynchronous navigation waiting for server to handle file upload */
   $('button').on('click', function(e) {
-    e.preventDefault();
-    disableButtons(true);
-    $.ajax({
-      url: window.location.pathname,
-      data: { navigation: $(this).attr('name') },
-      method: 'POST'
-    })
-    .done((res) => {
-      getStatus(res.data.task_id);
-    })
-    .fail((err) => {
-      console.log(err);
-    });
+    /* TODO:
+     * Have readMultipleFiles return or somehow populate a list of taskIDs so we
+     * can call getStatus on them and wait while the server populates the table
+     */
+     e.preventDefault();
+     disableButtons(true);
+
+    /* Continue button was pressed, js posts all file data to server asynchronously */
+    if ($(this).attr('name') === "continue") {
+      readMultipleFiles(acceptedFiles);
+    }
+    /* Cancel button pressed, server handles cancellation */
+    else if ($(this).attr('name') === "cancel") {
+      $.ajax({
+        url: window.location.pathname,
+        data: { navigation: "cancel" },
+        method: 'POST'
+      })
+      .done((res) => {
+        getStatus(res.data.task_id, 0);
+      })
+      .fail((err) => {
+        console.log(err);
+      });
+    }
   });
 
-  function getStatus(taskID) {
+  var numFinished = 0;
+  var numF = 0;
+  function getStatus(taskID, numFiles) {
+    numF = numFiles;
     $.ajax({
       url: window.location.pathname,
       data: { task_id: taskID },
@@ -100,10 +129,15 @@ $( document ).ready(() => {
     })
     .done((res) => {
       const status = res.data.task_status;
-      console.log('taskID: ' + taskID + ', status: ' + status)
-      if (status === 'finished' || status === 'failed') {
-        disableButtons(false);
-        //window.location.href = res.data.redirect;
+      console.log('taskID: ' + taskID + ', status: ' + status);
+      if (status === 'finished') {
+        numFinished += 1;
+        if (numFinished >= acceptedFiles.length) { // >= to account for cancel button press
+          console.log('res.data.redirect: ' + res.data.redirect);
+          window.location.href = res.data.redirect;
+        }
+      } else if (status === 'failed') {
+          window.location.href = res.data.redirect;
       } else {
         setTimeout(function() {
           getStatus(taskID);
