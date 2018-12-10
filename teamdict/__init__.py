@@ -31,14 +31,12 @@ def set_app_config():
         'UPLOAD_FOLDER': provider.module_path + upload_folder,
     }
 
-db_user=os.environ.get('DB_USER')
-db_pass=os.environ.get('DB_PASS')
 # Initialize flask app
 app = Flask(__name__)
 app.config.update(set_app_config())
 app.task_queue = rq.Queue(connection=conn)
 app.logger.addHandler(logging.StreamHandler(sys.stdout))
-app.dbconn = psycopg2.connect(app.config['DATABASE_URL'], sslmode='require', user=db_user, password=db_pass)
+app.dbconn = psycopg2.connect(app.config['DATABASE_URL'], sslmode='require')
 
 # Set up database table for mass data entry
 with app.dbconn.cursor() as cur:
