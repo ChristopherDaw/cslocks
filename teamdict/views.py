@@ -73,7 +73,7 @@ def data_entry(ext):
         if 'file' in request.files:
             file = request.files['file']
             if not allowed_file(file.filename):
-                ext = file.filename.rsplit('.', 1)[1].lower()
+                ext = file.filename.rsplit('.', 1)[-1].lower()
                 flash(f'Files of {ext} type are not allowed!')
                 return('', 200)
 
