@@ -8,12 +8,10 @@ a job to handle the incomming request in a Redis queue. After the task is
 queued, a 200 response is sent to confirm receipt of payload. For the purposes
 of this module, the request is assumed to be a POST request.
 """
-import rq
 import json
-from redis import Redis
-from flask import request
 from teamdict import app
-from teamdict.util import *
+from teamdict.util import triage_response, triage_command
+
 
 def queue_task(request, req_body, job_type, **extras):
     """
@@ -42,7 +40,11 @@ def queue_task(request, req_body, job_type, **extras):
         url = request.url_root
         job_data = JobData(headers, form, req_body, job_type, url=url)
         rq_job = app.task_queue.enqueue(triage_command, job_data)
+
+    # TODO: Use rq_job variable
+    print(rq_job)
     return ('', 200)
+
 
 def queue_util(job_func, type, **extras):
     """

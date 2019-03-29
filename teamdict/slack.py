@@ -11,6 +11,7 @@ in response to the use of a slash command.
 import json
 import requests
 
+
 def send_help(command, response_url, message=''):
     """
     Wrapper for send_delayed_message to send the user the help text along
@@ -30,19 +31,23 @@ def send_help(command, response_url, message=''):
     else:
         send_delayed_message(message, response_url, attachments=usage_str)
 
+
 def delete_original_msg(response_url):
     """Deletes a message at the invocation of a cancelling button press"""
     headers = {'Content-type': 'application/json'}
     payload_dict = {'delete_original': True}
     req = requests.post(
-            response_url,
-            data=json.dumps(payload_dict),
-            headers=headers
-        )
+        response_url,
+        data=json.dumps(payload_dict),
+        headers=headers
+    )
+    # TODO: do something with req variable
+    print(req)
+
 
 def send_delayed_message(message, response_url, callback_id='',
-                        attachments='', buttons=[], replace_original=False,
-                        response_type='ephemeral'):
+                         attachments='', buttons=[], replace_original=False,
+                         response_type='ephemeral'):
     """
     Sends a message to the response url provided in the original
     POST request with specified contents.
@@ -81,10 +86,12 @@ def send_delayed_message(message, response_url, callback_id='',
     }
 
     req = requests.post(
-            response_url,
-            data=json.dumps(payload_dict),
-            headers=headers
-        )
+        response_url,
+        data=json.dumps(payload_dict),
+        headers=headers
+    )
+    # TODO: do something with req variable
+    print(req)
 
 
 def api_call(method, token=None, **data):
@@ -105,13 +112,14 @@ def api_call(method, token=None, **data):
     if data is not None and token is None and 'token' in data:
         token = data['token']
     headers = {
-            'Content-type': 'application/x-www-form-urlencoded',
-            'Authorization': f'Bearer {token}'
-            }
+        'Content-type': 'application/x-www-form-urlencoded',
+        'Authorization': f'Bearer {token}'
+    }
 
     req = requests.post(post_url, headers=headers, data=data)
     json_response = json.loads(req.text)
     return json_response
+
 
 class Button:
     """
@@ -134,11 +142,11 @@ class Button:
 
     def build_dict(self):
         self.dict = {
-                'name': self.name,
-                'text': self.text,
-                'type': 'button',
-                'value': self.name,
-                }
+            'name': self.name,
+            'text': self.text,
+            'type': 'button',
+            'value': self.name,
+        }
         if len(self.confirm) > 0:
             self.dict['confirm'] = self.confirm
         if self.style:

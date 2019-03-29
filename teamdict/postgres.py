@@ -11,16 +11,16 @@ All methods in this module expect the command arguments to be formatted
 correctly.
 """
 
-import os
+import json
 import psycopg2
 import psycopg2.extras
 from datetime import datetime
-from flask import request
 from hashlib import blake2b
 from teamdict import app
-from teamdict.slack import *
+from teamdict.slack import send_delayed_message, api_call, Button
 
 conn = app.dbconn
+
 
 def create_table(form):
     """
@@ -51,10 +51,10 @@ def create_table(form):
                  ');'
                  )
         cur.execute(query, (as_is(table_name),))
-        send_delayed_message(
-                    f'Table `{short_name}` created!',
-                    form['response_url'])
+        send_delayed_message(f'Table `{short_name}` created!',
+                             form['response_url'])
         conn.commit()
+
 
 def drop_table(form):
     """
@@ -69,44 +69,45 @@ def drop_table(form):
     Returns:
         None
     """
-    #Request coming from a slash command directly
+    # Request coming from a slash command directly
     if 'text' in form:
         short_name, table_name = get_table_names(form, 1)
         if table_name is None:
             return
 
         drop_conf = {
-                "title": "Are you sure?",
-                "text": f"All data in {short_name} will be lost!",
-                "ok_text": "Confirm",
-                "dismiss_text": "Cancel"
-                }
+            "title": "Are you sure?",
+            "text": f"All data in {short_name} will be lost!",
+            "ok_text": "Confirm",
+            "dismiss_text": "Cancel"
+        }
         drop_btn = Button('drop', f'Drop {short_name}',
-                          danger = True, confirm=drop_conf)
+                          danger=True, confirm=drop_conf)
         cancel_btn = Button('cancel', 'Cancel')
         buttons = [drop_btn, cancel_btn]
         send_delayed_message(
-                f'Are you sure you want to drop {short_name}?',
-                form['response_url'],
-                attachments='This action cannot be undone.',
-                callback_id=table_name,
-                buttons=buttons
-                )
-    #Request coming from a button press in Slack
+            f'Are you sure you want to drop {short_name}?',
+            form['response_url'],
+            attachments='This action cannot be undone.',
+            callback_id=table_name,
+            buttons=buttons
+        )
+    # Request coming from a button press in Slack
     else:
         with conn.cursor() as cur:
             short_name, table_name = add_short_name(form['callback_id'])
             if not is_table(table_name):
                 send_delayed_message(
-                        f'No table named `{short_name}` exists.',
-                        form['response_url'])
+                    f'No table named `{short_name}` exists.',
+                    form['response_url'])
                 return
             query = 'DROP TABLE %s;'
             cur.execute(query, (as_is(table_name),))
             send_delayed_message(
-                        f'Table `{short_name}` dropped!',
-                        form['response_url'], replace_original=True)
+                f'Table `{short_name}` dropped!',
+                form['response_url'], replace_original=True)
             conn.commit()
+
 
 def add_data(form):
     """
@@ -128,7 +129,7 @@ def add_data(form):
     with conn.cursor() as cur:
         if 'table_name' in form:
             short_name, table_name = add_short_name(form['table_name'])
-        if not 'table_name' in form:
+        if 'table_name' not in form:
             short_name, table_name = get_table_names(form, 1)
             if table_name is None:
                 return
@@ -137,20 +138,21 @@ def add_data(form):
         key = text[2]
         value = ' '.join(text[3:])
         query = ('INSERT INTO %s (key, value) ' +
-                'VALUES (%s, %s);')
+                 'VALUES (%s, %s);')
         try:
             cur.execute(query, (as_is(table_name), key, value,))
         except psycopg2.IntegrityError:
-            #TODO: Ask user if they wish to update the value of duplicate key.
+            # TODO: Ask user if they wish to update the value of duplicate key.
             send_delayed_message(
-                    f'Key `{key}` already exists in `{short_name}`',
-                    form['response_url'])
+                f'Key `{key}` already exists in `{short_name}`',
+                form['response_url'])
             return
 
         send_delayed_message(
-                f'Key `{key}` added to `{short_name}`',
-                form['response_url'])
+            f'Key `{key}` added to `{short_name}`',
+            form['response_url'])
         conn.commit()
+
 
 def data_entry(form, url):
     """Prepare a url for mass data entry"""
@@ -167,8 +169,8 @@ def data_entry(form, url):
         url = f'{url}data_entry/{url_ext}'
 
         query = ('INSERT INTO data_entry_queue ' +
-                '(url_ext, table_name, response_url, user_id, channel_id) ' +
-                'VALUES (%s, %s, %s, %s, %s);')
+                 '(url_ext, table_name, response_url, user_id, channel_id) ' +
+                 'VALUES (%s, %s, %s, %s, %s);')
         cur.execute(query, (url_ext, table_name, response_url, user_id,
                             channel_id,))
 
@@ -178,28 +180,29 @@ def data_entry(form, url):
         buttons = [done_button.dict, cancel_button.dict]
         atext = f'Link expires in two minutes\n<{url}>'
         attachments = [{
-                'pretext': 'Data Entry',
-                'actions': buttons,
-                'text': atext,
-                'color': '#003F87',
-                'callback_id': url,
-                'fallback': url,
-                }]
+            'pretext': 'Data Entry',
+            'actions': buttons,
+            'text': atext,
+            'color': '#003F87',
+            'callback_id': url,
+            'fallback': url,
+        }]
 
         token = app.config['ACCESS_TOKEN']
         channel = form['channel_id']
         user = form['user_id']
         response = api_call('chat.postEphemeral', token=token, channel=channel,
-                user=user, attachments=json.dumps(attachments))
+                            user=user, attachments=json.dumps(attachments))
 
         # Add message timestamp to data_entry queue
         print(f'Message_ts from api_call response: {response["message_ts"]}')
         message_ts = response['message_ts']
         query = ('UPDATE data_entry_queue ' +
-                'SET message_ts = %s;')
+                 'SET message_ts = %s;')
         cur.execute(query, (message_ts,))
 
         conn.commit()
+
 
 def data_entry_helper(form):
     """
@@ -211,7 +214,7 @@ def data_entry_helper(form):
         key = form['key']
         value = form['value']
         query = ('INSERT INTO %s (key, value) ' +
-                'VALUES (%s, %s);')
+                 'VALUES (%s, %s);')
         try:
             cur.execute(query, (as_is(table_name), key, value,))
         except psycopg2.IntegrityError:
@@ -240,18 +243,19 @@ def delete_data(form):
         text = form['text'].lower().split()
         key = text[2]
         query = ('DELETE FROM %s ' +
-                'WHERE key = %s;')
+                 'WHERE key = %s;')
         cur.execute(query, (as_is(table_name), key,))
         item_existed = int(cur.statusmessage.split()[1]) > 0
         if item_existed:
             send_delayed_message(
-                    f'Key `{key}` deleted from `{short_name}`',
-                    form['response_url'])
+                f'Key `{key}` deleted from `{short_name}`',
+                form['response_url'])
             conn.commit()
         else:
             send_delayed_message(
-                    f'Key `{key}` was not found in `{short_name}`',
-                    form['response_url'])
+                f'Key `{key}` was not found in `{short_name}`',
+                form['response_url'])
+
 
 def show_tables(form):
     """
@@ -268,19 +272,20 @@ def show_tables(form):
 
     if len(table_names) == 0:
         send_delayed_message(
-                f'No tables found in {channel_name}.',
-                form['response_url'])
+            f'No tables found in {channel_name}.',
+            form['response_url'])
     else:
         plural_s = 's' if len(table_names) > 1 else ''
         short_name_arr = [table_name[0] for table_name in table_names]
         short_name_str = '\n'.join(short_name_arr)
 
         send_delayed_message(
-                f'{len(table_names)} table{plural_s} found in {channel_name}.',
-                form['response_url'],
-                attachments=short_name_str)
+            f'{len(table_names)} table{plural_s} found in {channel_name}.',
+            form['response_url'],
+            attachments=short_name_str)
 
-#TODO: Add functionality to lookup multiple keys.
+
+# TODO: Add functionality to lookup multiple keys.
 def lookup(form):
     """
     Lookup a value from the channel in which the command originated. If no
@@ -297,15 +302,15 @@ def lookup(form):
     text = form['text'].lower().split()
 
     key = text[0]
-    values_found = [] #List of tuples, e.g. [(table, val), (table2, val2)]
-    if len(text) == 1: #Find all instances of 'key' in all tables
+    values_found = []  # List of tuples, e.g. [(table, val), (table2, val2)]
+    if len(text) == 1:  # Find all instances of 'key' in all tables
         table_names = get_channel_tables(form)
         for names in table_names:
             short_name = names[0]
             value = lookup_helper(form, key, names)
             if len(value) > 0:
                 values_found.append((short_name, value))
-    elif len(text) == 2: #Find 'key' in the given table name
+    elif len(text) == 2:  # Find 'key' in the given table name
         names = get_table_names(form, 1)
         if names[0] is None:
             return
@@ -314,20 +319,20 @@ def lookup(form):
         values_found.append((short_name, value))
     else:
         send_delayed_message(
-                'Unable to execute command:',
-                form['response_url'],
-                attachments=f"form['command'] form['text']")
+            'Unable to execute command:',
+            form['response_url'],
+            attachments=f"form['command'] form['text']")
         return
 
     if len(values_found) == 0:
         send_delayed_message(
-                f'No key found matching `{key}`.',
-                form['response_url'])
+            f'No key found matching `{key}`.',
+            form['response_url'])
     elif len(values_found) == 1:
         send_delayed_message(
-                f'`{key}` found in {values_found[0][0]}:',
-                form['response_url'],
-                attachments=f'{key}: {values_found[0][1]}')
+            f'`{key}` found in {values_found[0][0]}:',
+            form['response_url'],
+            attachments=f'{key}: {values_found[0][1]}')
     else:
         values_str = ''
         for value_table_pair in values_found:
@@ -335,12 +340,12 @@ def lookup(form):
             value = value_table_pair[1]
             values_str += f'{table}: {value}\n'
         send_delayed_message(
-                f'`{key}` found in {len(values_found)} tables:',
-                form['response_url'],
-                attachments=values_str)
+            f'`{key}` found in {len(values_found)} tables:',
+            form['response_url'],
+            attachments=values_str)
 
 
-#TODO: document that this function does the query and returns the result
+# TODO: document that this function does the query and returns the result
 # and that the lookup() function sends a message to slack once it gets all the
 # queries done.
 def lookup_helper(form, key, table_names):
@@ -364,43 +369,45 @@ def lookup_helper(form, key, table_names):
         short_name, table_name = table_names
         if not is_table(table_name):
             send_delayed_message(
-                    f'No table named `{short_name}` exists.',
-                    form['response_url'])
+                f'No table named `{short_name}` exists.',
+                form['response_url'])
             return ''
 
         query = ('SELECT value FROM %s ' +
-                'WHERE key = %s;')
+                 'WHERE key = %s;')
         cur.execute(query, (as_is(table_name), key,))
         result = cur.fetchall()
 
     if len(result) > 0:
-        return result[0][0] #Extract value from a tuple in an array
+        return result[0][0]  # Extract value from a tuple in an array
     else:
         return result
+
 
 def verify_ext(ext):
     """take an extension from /data_entry/<ext> and ensure it's in the
     data_entry_queue table"""
     with conn.cursor(cursor_factory=psycopg2.extras.RealDictCursor) as cur:
         query = ('SELECT * FROM data_entry_queue WHERE ' +
-                'url_ext = %s;')
+                 'url_ext = %s;')
         cur.execute(query, (ext,))
         results = cur.fetchone()
-        #Check if request has not expired
+        # Check if request has not expired
         if results is None or results['exp_date'] < datetime.now():
             results = []
 
         return results
+
 
 def fetch_data_entry_row(ext):
     """take an extension from /data_entry/<ext> and ensure it's in the
     data_entry_queue table"""
     with conn.cursor(cursor_factory=psycopg2.extras.RealDictCursor) as cur:
         query = ('SELECT * FROM data_entry_queue WHERE ' +
-                'url_ext = %s')
+                 'url_ext = %s')
         cur.execute(query, (ext,))
         results = cur.fetchone()
-        #Check if request has not expired
+        # Check if request has not expired
         if results is None or results['exp_date'] < datetime.now():
             results = []
         conn.commit()
@@ -410,6 +417,7 @@ def fetch_data_entry_row(ext):
 #######################
 #  UTILITY FUNCTIONS  #
 ######################
+
 
 def get_table_names(form, tn_index):
     """
@@ -432,10 +440,11 @@ def get_table_names(form, tn_index):
     table_name = f'{team_domain}_{channel_id}_{short_name}'
     if not is_table(table_name) and not text[0] == 'create':
         send_delayed_message(
-                f'No table named `{short_name}` exists.',
-                form['response_url'])
+            f'No table named `{short_name}` exists.',
+            form['response_url'])
         return (None, None)
     return (short_name, table_name)
+
 
 def add_short_name(table_name):
     """
@@ -455,6 +464,7 @@ def add_short_name(table_name):
 
     return (short_name, table_name)
 
+
 def get_channel_tables(form):
     """
     Finds and returns all tables in the channel where the command originated.
@@ -469,17 +479,18 @@ def get_channel_tables(form):
     short_long_names = []
     with conn.cursor() as cur:
         team_domain = form['team_domain']
-        channel_id = form ['channel_id']
+        channel_id = form['channel_id']
         table_prefix = f"^{team_domain}_{channel_id}".lower()
 
         query = ('SELECT table_name ' +
-                'FROM information_schema.tables ' +
-                'WHERE table_name ~ %s;')
+                 'FROM information_schema.tables ' +
+                 'WHERE table_name ~ %s;')
         cur.execute(query, (table_prefix,))
         tables = [table[0] for table in cur.fetchall()]
         short_long_names = [add_short_name(table) for table in tables]
 
     return short_long_names
+
 
 def is_table(table_name):
     """
@@ -495,14 +506,14 @@ def is_table(table_name):
     table_name = table_name.lower()
     with conn.cursor() as cur:
         query = ('SELECT EXISTS (' +
-                'SELECT 1 FROM pg_tables ' +
-                'WHERE tablename = %s' +
-                ');'
-                )
+                 'SELECT 1 FROM pg_tables ' +
+                 'WHERE tablename = %s' +
+                 ');')
         cur.execute(query, (table_name,))
         result = cur.fetchone()[0]
 
     return result
+
 
 def as_is(table_name):
     """Returns an AsIs object to avoid quoted table_names for db queries."""

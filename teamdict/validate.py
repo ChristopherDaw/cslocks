@@ -12,6 +12,7 @@ import os
 import hmac
 import hashlib
 
+
 def is_valid_request(request):
     """
     Follows Slack's cryptographic method of ensuring a POST request
@@ -28,6 +29,7 @@ def is_valid_request(request):
     slack_signature = request.headers['X-Slack-Signature']
 
     return hmac.compare_digest(computed_signature, slack_signature)
+
 
 def compute_signature(request):
     """

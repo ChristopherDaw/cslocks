@@ -8,15 +8,16 @@ This module defines the routes for flask endpoints.
 import os
 from flask import request, render_template, url_for, redirect, flash, jsonify
 from werkzeug.utils import secure_filename
-from datetime import datetime
 from teamdict import app
 from teamdict.postgres import verify_ext
 from teamdict.redis import queue_task, queue_util
-from teamdict.util import handle_upload_cancellation, handle_file_upload, allowed_file, handle_file_result
+from teamdict.util import handle_upload_cancellation, allowed_file, handle_file_result
+
 
 @app.route('/')
 def homepage():
     return render_template('index.html')
+
 
 @app.route('/slack/lookup', methods=['POST', 'GET'])
 def lookup():
@@ -27,6 +28,7 @@ def lookup():
     else:
         return redirect(url_for('homepage'))
 
+
 @app.route('/slack/modify', methods=['POST', 'GET'])
 def modify():
     if request.method == 'POST':
@@ -35,6 +37,7 @@ def modify():
 
     else:
         return redirect(url_for('homepage'))
+
 
 @app.route('/slack/response', methods=['POST', 'GET'])
 def response():
@@ -45,11 +48,12 @@ def response():
     else:
         return redirect(url_for('homepage'))
 
+
 @app.route('/data_entry/<ext>', methods=['POST', 'GET'])
 def data_entry(ext):
     # When a user navigates to the URL for data entry
     if request.method == 'GET':
-        #TODO: Make this in the redis queue
+        # TODO: Make this in the redis queue
         data = verify_ext(ext)
         if len(data) == 0:
             # Render failure page
@@ -58,7 +62,7 @@ def data_entry(ext):
             # Extract data from database row
             print(data)
             table_name = data['table_name'].split('_')[1]
-            req_body = request.get_data(as_text=True)
+            # req_body = request.get_data(as_text=True)
 
             # Render data entry page
             return render_template('dataentry.html', table_name=table_name, url_ext=ext)
@@ -122,9 +126,11 @@ def data_entry(ext):
                     response_json = {'status': 'error'}
                 return jsonify(response_json), 202
 
+
 @app.route('/success')
 def success():
     return render_template('success.html'), 200
+
 
 @app.route('/test', methods=['POST', 'GET'])
 def testing():

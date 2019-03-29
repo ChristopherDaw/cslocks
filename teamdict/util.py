@@ -8,9 +8,10 @@ This module contains utility functions necessary for other modules of this app.
 import os
 import psycopg2.extras
 from teamdict import app
-from teamdict.slack import *
+from teamdict.slack import send_delayed_message, send_help, delete_original_msg, api_call
 from teamdict.validate import is_valid_request
 import teamdict.postgres as db
+
 
 def triage_command(job_data):
     """
@@ -42,9 +43,9 @@ def triage_command(job_data):
     else:
         command = text[0]
 
-    #TODO: Parameter checking before passing the buck to the database handler.
+    # TODO: Parameter checking before passing the buck to the database handler.
     if command == 'help' or command == '':
-        #TODO: Allow for help on specific commands /lookup help <cmd>
+        # TODO: Allow for help on specific commands /lookup help <cmd>
         send_help(slash_command, response_url)
 
     if slash_command[1:] == 'dbmod' and job_type == 'modify':
@@ -60,7 +61,7 @@ def triage_command(job_data):
         elif command == 'delete':
             db.delete_data(form)
         else:
-            #TODO: make global vars for help and usage strings
+            # TODO: make global vars for help and usage strings
             send_help(slash_command, response_url, message='Accepted commands')
     elif slash_command[1:] == job_type == 'lookup':
         if command == 'show':
@@ -73,6 +74,7 @@ def triage_command(job_data):
         send_help(slash_command, response_url, message='Command not found.')
 
     return
+
 
 def triage_response(job_data):
     """
@@ -94,8 +96,8 @@ def triage_response(job_data):
         send_delayed_message(message, response_url)
         return
 
-    actions = form['actions'][0] #'actions' is an array containing only a dict
-    #TODO: sanity check on this triaging
+    actions = form['actions'][0]  # 'actions' is an array containing only a dict
+    # TODO: sanity check on this triaging
     if actions['value'] == 'cancel':
         delete_original_msg(response_url)
     elif actions['value'] == 'done':
@@ -109,10 +111,11 @@ def triage_response(job_data):
         channel = form['channel']['id']
         message_ts = form['message_ts']
         api_call('chat.delete', token=app.config['ACCESS_TOKEN'],
-                channel=channel, ts=message_ts)
+                 channel=channel, ts=message_ts)
     else:
         message = f'Action `{actions["value"]}` not supported!'
         send_delayed_message(message, response_url)
+
 
 def handle_data_entry(job_data):
     data_entry = job_data.data
@@ -124,6 +127,7 @@ def handle_data_entry(job_data):
 
     print(f'Response from api_call: {response}')
 
+
 def handle_file_result(**kwargs):
     if 'ext' not in kwargs:
         return
@@ -131,20 +135,21 @@ def handle_file_result(**kwargs):
     ext = kwargs['ext']
     dbrow = db.fetch_data_entry_row(ext)
 
-    key = ''
-    value = ''
+    # key = ''
+    # value = ''
     form = {}
     form['response_url'] = dbrow['response_url']
     form['table_name'] = dbrow['table_name']
     for row in kwargs['data'].split('\n'):
         data = row.split(',')
         if len(data) < 2:
-            #print(f'data formatted wrong: {data}')
-            #Improper formatting for this key-value pair
+            # print(f'data formatted wrong: {data}')
+            # Improper formatting for this key-value pair
             continue
         form['key'] = data[0]
         form['value'] = ' '.join(data[1:])
         db.data_entry_helper(form)
+
 
 def handle_file_upload(**kwargs):
     if 'ext' not in kwargs:
@@ -153,8 +158,8 @@ def handle_file_upload(**kwargs):
     ext = kwargs['ext']
     dbrow = db.fetch_data_entry_row(ext)
 
-    key = ''
-    value = ''
+    # key = ''
+    # value = ''
     form = {}
     form['response_url'] = dbrow['response_url']
     form['table_name'] = dbrow['table_name']
@@ -166,13 +171,14 @@ def handle_file_upload(**kwargs):
                     data = row.rstrip('\n').split(',')
                     if len(data) < 2:
                         print(f'data formatted wrong: {data}')
-                        #Improper formatting for this key-value pair
+                        # Improper formatting for this key-value pair
                         continue
                     form['key'] = data[0]
                     form['value'] = ' '.join(data[1:])
                     db.data_entry_helper(form)
 
             os.remove(os.path.join(uploads, filename))
+
 
 def handle_upload_cancellation(**kwargs):
     if 'ext' not in kwargs:
@@ -182,11 +188,12 @@ def handle_upload_cancellation(**kwargs):
     # Delete the database row for this file upload
     with app.dbconn.cursor(cursor_factory=psycopg2.extras.RealDictCursor) as cur:
         query = ('DELETE FROM data_entry_queue WHERE ' +
-                'url_ext = %s RETURNING *;')
+                 'url_ext = %s RETURNING *;')
         cur.execute(query, (ext,))
         app.dbconn.commit()
 
     delete_uploaded_files(ext)
+
 
 def delete_uploaded_files(ext):
     # Delete files associated with this upload session
@@ -194,6 +201,7 @@ def delete_uploaded_files(ext):
     for filename in os.listdir(uploads):
         if filename.split('_')[0] == ext:
             os.remove(os.path.join(uploads, filename))
+
 
 def allowed_file(filename):
     ext = filename.rsplit('.', 1)[1].lower()
