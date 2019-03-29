@@ -30,10 +30,12 @@ def triage_command(job_data):
     slash_command = form['command']
 
 # Comment out for testing purposes
+    """
     if not is_valid_request(job_data):
         message = 'Access denied!'
         send_delayed_message(message, response_url)
         return
+    """
 
     text = form['text'].lower().split()
 

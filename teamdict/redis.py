@@ -42,7 +42,7 @@ def queue_task(request, req_body, job_type, **extras):
         rq_job = app.task_queue.enqueue(triage_command, job_data)
 
     # TODO: Use rq_job variable
-    print(rq_job)
+    print(f'queue_task rq_job variable: {rq_job}')
     return ('', 200)
 
 

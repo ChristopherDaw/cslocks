@@ -135,7 +135,8 @@ def success():
 @app.route('/test', methods=['POST', 'GET'])
 def testing():
     if request.method == 'POST':
-        print(request.get_data(as_text=True))
+        print(f'testing request data: {request.get_data(as_text=True)}')
+        return('', 200)
 
     else:
         return redirect(url_for('homepage'))
