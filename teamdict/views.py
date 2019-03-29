@@ -61,7 +61,7 @@ def data_entry(ext):
         elif len(data) > 0:
             # Extract data from database row
             print(data)
-            table_name = data['table_name'].split('_')[1]
+            table_name = data['table_name'].split('_')[-1]
             # req_body = request.get_data(as_text=True)
 
             # Render data entry page
@@ -73,7 +73,7 @@ def data_entry(ext):
         if 'file' in request.files:
             file = request.files['file']
             if not allowed_file(file.filename):
-                ext = file.filename.rsplit('.', 1)[-1].lower()
+                ext = file.filename.rsplit('.', 1)[1].lower()
                 flash(f'Files of {ext} type are not allowed!')
                 return('', 200)
 
