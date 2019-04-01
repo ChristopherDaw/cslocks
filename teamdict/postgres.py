@@ -180,7 +180,7 @@ def data_entry(form, url):
         buttons = [done_button.dict, cancel_button.dict]
         atext = f'Link expires in two minutes\n<{url}>'
         attachments = [{
-            'pretext': 'Data Entry',
+            'pretext': 'Upload your CSV file(s) here on this page:',
             'actions': buttons,
             'text': atext,
             'color': '#003F87',

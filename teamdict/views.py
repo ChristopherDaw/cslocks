@@ -57,7 +57,7 @@ def data_entry(ext):
         data = verify_ext(ext)
         if len(data) == 0:
             # Render failure page
-            return ("<h1>Try again</h1>", 403)
+            return redirect(url_for('fail'))
         elif len(data) > 0:
             # Extract data from database row
             print(data)
@@ -130,6 +130,11 @@ def data_entry(ext):
 @app.route('/success')
 def success():
     return render_template('success.html'), 200
+
+
+@app.route('/fail')
+def fail():
+    return render_template('fail.html'), 200
 
 
 @app.route('/test', methods=['POST', 'GET'])

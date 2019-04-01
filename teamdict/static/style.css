@@ -32,6 +32,22 @@ body {
     vertical-align: middle;
 }
 
+.header a {
+    text-decoration: none;
+    color: #000;
+}
+
+.msg {
+    line-height: 40px;
+    font-size: 20px;
+    text-align: center;
+    vertical-align: middle;
+}
+
+.msg a {
+    margin-top: 10px;
+}
+
 body {
   color: #000;
   text-align: left;
